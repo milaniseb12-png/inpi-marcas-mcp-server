@@ -137,13 +137,19 @@ Nada disso bloqueia o achado principal. Ficam como próximo passo se for do inte
 
 ## Recomendação
 
-**Não migrar nem construir cliente novo em cima disso agora.** Três motivos, medidos, não
-supostos: (1) é ambiente de homologação, sem contrato de estabilidade; (2) a API oficial
-documentada — a que faz sentido depender pra produção — tem data prevista, 3º trimestre de 2026,
-poucos meses; (3) o dado está mais desatualizado que o pePI hoje.
+**Usar agora como fonte de consolidação de CNPJ, em volume.** O gap de frescor (dois meses,
+07/07 vs 08/09/2026) não pesa nada contra um acervo de 20+ anos de RPIs, e CNPJ é campo estático
+— não muda de um mês pro outro num processo já julgado. Não é motivo pra esperar.
 
-**Vale como fonte de enriquecimento pontual, testada com cautela, pro que ela cobre bem**: CNPJ
-de titular pessoa jurídica, em volume, rápido — isso é real e testado. Não serve pra CPF, e-mail
-ou telefone. Se o Leo quiser seguir essa frente antes da v3 oficial, é decisão dele — o risco
-técnico (API não documentada, pode mudar) é dele assumir conscientemente, não algo a decidir
-por conta própria.
+O único risco real é técnico, não de dado: **é a API interna de um ambiente de homologação, não
+documentada, sem contrato de estabilidade** — pode mudar de formato ou ficar indisponível sem
+aviso. Isso não bloqueia usar agora; muda COMO usar: rodar como job de enriquecimento em lote
+(não dependência crítica de runtime), guardar o dado extraído (CNPJ é fato histórico, uma vez
+capturado não precisa se preocupar se a fonte sumir depois), e não trocar o pePI por ela em
+nada que já funciona.
+
+**Não resolve CPF, e-mail nem telefone** — isso é limitação real do schema, não de frescor,
+confirmado testando titular pessoa física de verdade. Precisa de outra fonte pra esses três.
+
+Próximo passo: número real do `marca-analista` (quantos CNPJ faltam, de que denominador) vira o
+tamanho do lote de consolidação.
