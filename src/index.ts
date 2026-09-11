@@ -358,8 +358,15 @@ Use quando a busca básica (inpi_search_by_mark) for imprecisa demais ou quando 
           FormaApresentacao: APRESENTACAO_MAP[params.apresentacao],
           FormaNatureza: NATUREZA_MAP[params.natureza],
           classeInter: params.classe_nice ?? "",
-          ListaTodosPedidos: params.apenas_pedidos_vivos ? "" : "on",
-          ListaFigura: "",
+          // "ListaTodosPedidos" e "ListaFigura" sao checkboxes no form real (value="E" quando
+          // marcados). Um checkbox DESMARCADO nao manda campo NENHUM no POST — nao manda ""
+          // vazio. A gente mandava sempre os dois com "" quando "desmarcado", e isso mudava o
+          // formato da resposta inteira: confirmado ao vivo contra o navegador real (Playwright)
+          // que "marca=APPLE&FormaApresentacao=2" sozinho (sem esses dois campos) devolve tabela
+          // normal com 310 processos "APPLE" de verdade; mandando os campos extra (mesmo vazios)
+          // a resposta virava uma grade de cartoes diferente com 165 resultados quase todos sem
+          // relacao com "APPLE". Corrigido: so inclui o campo quando o checkbox estaria marcado.
+          ...(params.apenas_pedidos_vivos ? {} : { ListaTodosPedidos: "E" }),
           registerPerPage: String(params.resultados_por_pagina),
           botao: "",
           Action: "searchMarca",
@@ -495,7 +502,8 @@ A Classificação de Viena completa está em https://www.gov.br/inpi — se não
           viena2: params.viena_2 ? normalizeVienaCode(params.viena_2) : "",
           viena3: params.viena_3 ? normalizeVienaCode(params.viena_3) : "",
           classeInter: params.classe_nice ?? "",
-          ListaFigura: "",
+          // "ListaFigura" e' checkbox no form real; desmarcado nao manda campo nenhum, nao "".
+          // Ver o comentário equivalente em inpi_search_by_mark_advanced.
           registerPerPage: String(params.resultados_por_pagina),
           botao: "",
           Action: "searchMarca",

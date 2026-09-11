@@ -110,6 +110,31 @@ const adv = await call("inpi_search_by_mark_advanced", {
 const sAdv = adv.structuredContent;
 assert(typeof sAdv?.totalEncontrado === "number" && sAdv.totalEncontrado > 0, "busca avançada: totalEncontrado é um número > 0");
 assert(Array.isArray(sAdv?.resultados) && sAdv.resultados.length > 0, "busca avançada: resultados não vazio");
+assert(
+  sAdv.resultados.some((r) => r.marca?.toUpperCase().includes("GOOGLE")),
+  "busca avançada: pelo menos um resultado tem 'GOOGLE' na marca (não só na contagem)",
+);
+
+// --- inpi_search_by_mark_advanced com apresentacao restrita (regressão: "ListaTodosPedidos"/
+// "ListaFigura" sao checkboxes no form real — desmarcado NAO manda campo nenhum, nao "". Mandar
+// "" sempre quebrava a resposta inteira: virava outro formato de página com resultado quase
+// todo sem relação com o termo buscado. Prova viva: "APPLE" + apresentação mista tem que
+// devolver "APPLE" de verdade, não empresa aleatória.) ---
+const advMista = await call("inpi_search_by_mark_advanced", {
+  marca: "APPLE",
+  busca_fuzzy: false,
+  apresentacao: "mista",
+  natureza: "qualquer",
+  apenas_pedidos_vivos: true,
+  resultados_por_pagina: 20,
+});
+const sAdvMista = advMista.structuredContent;
+assert(
+  Array.isArray(sAdvMista?.resultados) &&
+    sAdvMista.resultados.length > 0 &&
+    sAdvMista.resultados.filter((r) => r.marca?.toUpperCase().includes("APPLE")).length >= sAdvMista.resultados.length * 0.8,
+  "busca avançada com apresentação restrita: maioria dos resultados tem 'APPLE' na marca (regressão do bug de checkbox)",
+);
 
 // --- inpi_search_by_owner (nome -> disambiguation -> pos) ---
 const owner1 = await call("inpi_search_by_owner", { nome: "GOOGLE", resultados_por_pagina: 20 });
