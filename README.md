@@ -310,11 +310,14 @@ HTML).
 
 ## Limitações conhecidas
 
-- **Não fiz plano de migração pra um "novo portal" do INPI.** Existe uma URL
-  `servicos.busca.inpi.gov.br` que parece ser uma interface nova do INPI, mas é uma SPA
-  (JavaScript), não dá pra confirmar por fetch simples se é uma busca de marcas, se está em
-  produção, ou se substitui o pePI. Não construí abstração de fonte em cima disso sem verificar
-  — se alguém confirmar que é estável e substitui o pePI, abra uma issue com a evidência.
+- **Existe um portal novo de busca de marcas do INPI, ainda não mapeado.**
+  [servicos.busca.inpi.gov.br/marcas](https://servicos.busca.inpi.gov.br/marcas) — confirmado
+  real e em produção (versão 2, 21/08/2026; dados atualizados em 07/07/2026; telas de "Busca
+  rápida" e "Busca", PT/ES/EN). Ainda não sei se substitui o pePI ou só o espelha, nem como são
+  tráfego/endpoints, login, limites, exportação de imagem — é SPA (JavaScript), então fetch
+  simples não basta pra mapear. **Este servidor continua sobre o pePI**, a fonte implementada e
+  provada; o portal novo é candidato a fonte futura, sujeito a um estudo dedicado antes de
+  qualquer código.
 
 ## Licença
 
