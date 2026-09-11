@@ -73,7 +73,24 @@ do INPI, não só da busca ao vivo.
 
 Cada ferramenta devolve **duas coisas na mesma chamada**: um `content` em texto (Markdown,
 pra ler direto) e um `structuredContent` com os mesmos dados em JSON (pra outro programa
-processar). Não devolve HTML nem TXT solto — é o padrão do protocolo MCP.
+processar). Isso é o padrão do protocolo MCP e não muda.
+
+Além disso, toda ferramenta de busca e a de detalhe aceitam `salvar_html: true` — aí, **além**
+do Markdown e do JSON, o servidor também escreve um relatório HTML autocontido (tabela, sem
+depender de MCP nem de internet pra abrir) em `~/inpi-marcas-mcp-server/relatorios/` (ou em
+`INPI_HTML_DIR`, se definido), e devolve o caminho do arquivo na resposta.
+
+## Cache local
+
+Toda busca (exceto `inpi_next_page`, que depende da sessão do servidor do pePI) passa primeiro
+por um cache em disco — `~/.cache/inpi-marcas-mcp-server/` por padrão, configurável em
+`INPI_CACHE_DIR`. A mesma busca repetida dentro de `INPI_CACHE_TTL_HORAS` (padrão: 6h) volta
+instantânea, sem chamada nenhuma ao pePI. Use `forcar_atualizacao: true` em qualquer ferramenta
+pra ignorar o cache e ir direto ao pePI ao vivo. `INPI_CACHE_TTL_HORAS=0` desliga o cache.
+
+Isso existe pra não martelar um sistema de governo sem SLA com a mesma pergunta de novo — e
+pra deixar buscas repetidas (ex: um agente checando a mesma marca em turnos diferentes de uma
+conversa) instantâneas.
 
 ## Desenvolvimento
 

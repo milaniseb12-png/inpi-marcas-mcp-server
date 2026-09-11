@@ -14,7 +14,9 @@ import { z } from "zod";
 import { PepiClient, PepiAuthError } from "./client.js";
 import { parseProcessDetail, parseSearchResults } from "./parsers.js";
 import { CHARACTER_LIMIT, VALID_PAGE_SIZES } from "./constants.js";
-import type { SearchResult } from "./types.js";
+import { getCacheDir, getCacheTtlMs, pruneExpiredCache, readCache, writeCache } from "./cache.js";
+import { renderProcessDetailHtml, renderSearchResultHtml, saveHtmlReport } from "./htmlExport.js";
+import type { ProcessoDetalhe, SearchResult } from "./types.js";
 
 const username = process.env.INPI_USERNAME;
 const password = process.env.INPI_PASSWORD;
@@ -32,6 +34,86 @@ const client = new PepiClient(username, password);
 function truncate(text: string): { text: string; truncated: boolean } {
   if (text.length <= CHARACTER_LIMIT) return { text, truncated: false };
   return { text: text.slice(0, CHARACTER_LIMIT) + "\n\n[...resposta cortada em " + CHARACTER_LIMIT + " caracteres. Refine a busca ou use registerPerPage menor.]", truncated: true };
+}
+
+const SalvarHtmlField = z
+  .boolean()
+  .default(false)
+  .describe(
+    "true = também salva o resultado como um relatório HTML legível (tabela, sem depender de MCP) em disco e devolve o caminho do arquivo.",
+  );
+
+const ForcarAtualizacaoField = z
+  .boolean()
+  .default(false)
+  .describe(`Ignora o cache local (padrão ${Math.round(getCacheTtlMs() / 3_600_000)}h) e busca de novo no pePI ao vivo.`);
+
+/**
+ * Cache local por parâmetros de busca — pula a chamada ao pePI se a mesma consulta já foi
+ * feita recentemente.
+ *
+ * Achado real: o pePI guarda "qual foi a última busca" na SESSÃO DO SERVIDOR, não aqui — é
+ * disso que inpi_next_page depende. Se uma busca vier do cache (nenhuma chamada de verdade
+ * sai pra rede), o servidor nunca fica sabendo dela, e um next_page() logo depois pagina
+ * a busca ERRADA (a última que realmente foi enviada, silenciosamente). lastServedSearchKey/
+ * lastLiveSearchKey/lastServedReplay existem só pra fechar esse buraco: se o que foi
+ * SERVIDO ao agente não bate com o que foi REALMENTE enviado por último, inpi_next_page
+ * reenvia a busca ao vivo antes de paginar. Só as 5 ferramentas de busca participam disso
+ * (tracksPagination); inpi_get_process_detail usa outra Action no pePI e não teria por que
+ * "restaurar" nada.
+ */
+let lastLiveSearchKey: string | null = null;
+let lastServedSearchKey: string | null = null;
+let lastServedReplay: (() => Promise<void>) | null = null;
+
+async function withCache<T>(
+  tool: string,
+  cacheParams: Record<string, unknown>,
+  forcarAtualizacao: boolean,
+  fetcher: () => Promise<T>,
+  opts: { tracksPagination?: boolean } = {},
+): Promise<{ result: T; fromCache: boolean; cachedAt?: string }> {
+  const tracksPagination = opts.tracksPagination ?? true;
+  const key = `${tool}:${JSON.stringify(cacheParams, Object.keys(cacheParams).sort())}`;
+
+  const goLive = async (): Promise<T> => {
+    const fresh = await fetcher();
+    await writeCache(tool, cacheParams, fresh);
+    if (tracksPagination) lastLiveSearchKey = key;
+    return fresh;
+  };
+
+  if (!forcarAtualizacao) {
+    const cached = await readCache<T>(tool, cacheParams);
+    if (cached) {
+      if (tracksPagination) {
+        lastServedSearchKey = key;
+        lastServedReplay = async () => {
+          await goLive();
+        };
+      }
+      return { result: cached.result, fromCache: true, cachedAt: cached.cachedAt };
+    }
+  }
+  const result = await goLive();
+  if (tracksPagination) {
+    lastServedSearchKey = key;
+    lastServedReplay = async () => {
+      await goLive();
+    };
+  }
+  return { result, fromCache: false };
+}
+
+function appendMeta(text: string, opts: { fromCache: boolean; cachedAt?: string; htmlPath?: string }): string {
+  const lines = [text];
+  if (opts.fromCache) {
+    lines.push("", `_(resultado do cache local, consultado em ${opts.cachedAt}; use forcar_atualizacao=true para ir ao pePI ao vivo)_`);
+  }
+  if (opts.htmlPath) {
+    lines.push("", `Relatório HTML salvo em: ${opts.htmlPath}`);
+  }
+  return lines.join("\n");
 }
 
 function formatSearchResult(result: SearchResult, context: string): { text: string; structured: SearchResult } {
@@ -100,6 +182,8 @@ const SearchByProcessSchema = z
     numero_gru: z.string().optional().describe("Número da GRU (Guia de Recolhimento da União)"),
     numero_protocolo: z.string().optional().describe("Número do protocolo de petição"),
     numero_inscricao_internacional: z.string().optional().describe("Número da inscrição internacional (Protocolo de Madri)"),
+    salvar_html: SalvarHtmlField,
+    forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
 
@@ -118,18 +202,29 @@ Retorna o(s) processo(s) encontrado(s) com número, marca, situação, titular e
       return { content: [{ type: "text" as const, text: "Informe pelo menos um número: processo, GRU, protocolo ou inscrição internacional." }] };
     }
     try {
-      const html = await client.postMarcas({
-        NumPedido: params.numero_processo ?? "",
-        NumGRU: params.numero_gru ?? "",
-        NumProtocolo: params.numero_protocolo ?? "",
-        NumInscricaoInternacional: params.numero_inscricao_internacional ?? "",
-        botao: "",
-        Action: "searchMarca",
-        tipoPesquisa: "BY_NUM_PROC",
+      const cacheParams = {
+        numero_processo: params.numero_processo,
+        numero_gru: params.numero_gru,
+        numero_protocolo: params.numero_protocolo,
+        numero_inscricao_internacional: params.numero_inscricao_internacional,
+      };
+      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_process_number", cacheParams, params.forcar_atualizacao, async () => {
+        const html = await client.postMarcas({
+          NumPedido: params.numero_processo ?? "",
+          NumGRU: params.numero_gru ?? "",
+          NumProtocolo: params.numero_protocolo ?? "",
+          NumInscricaoInternacional: params.numero_inscricao_internacional ?? "",
+          botao: "",
+          Action: "searchMarca",
+          tipoPesquisa: "BY_NUM_PROC",
+        });
+        return parseSearchResults(html);
       });
-      const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, "busca por número");
-      const t = truncate(text);
+      const context = "busca por número";
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -144,6 +239,8 @@ const SearchByMarkSchema = z
     busca_exata: z.boolean().default(true).describe("true = busca exata; false = busca por radical (contém o texto)"),
     classe_nice: z.string().optional().describe("Filtra pela Classificação de Nice, ex: 09, 42"),
     resultados_por_pagina: RegisterPerPageSchema,
+    salvar_html: SalvarHtmlField,
+    forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
 
@@ -159,19 +256,25 @@ Use esta busca para descobrir se um nome já está registrado e quem são os tit
   },
   async (params) => {
     try {
-      const html = await client.postMarcas({
-        buscaExata: params.busca_exata ? "sim" : "nao",
-        txt: "",
-        marca: params.marca,
-        classeInter: params.classe_nice ?? "",
-        registerPerPage: String(params.resultados_por_pagina),
-        botao: "",
-        Action: "searchMarca",
-        tipoPesquisa: "BY_MARCA_CLASSIF_BASICA",
+      const cacheParams = { marca: params.marca, busca_exata: params.busca_exata, classe_nice: params.classe_nice, resultados_por_pagina: params.resultados_por_pagina };
+      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_mark", cacheParams, params.forcar_atualizacao, async () => {
+        const html = await client.postMarcas({
+          buscaExata: params.busca_exata ? "sim" : "nao",
+          txt: "",
+          marca: params.marca,
+          classeInter: params.classe_nice ?? "",
+          registerPerPage: String(params.resultados_por_pagina),
+          botao: "",
+          Action: "searchMarca",
+          tipoPesquisa: "BY_MARCA_CLASSIF_BASICA",
+        });
+        return parseSearchResults(html);
       });
-      const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, `marca "${params.marca}"`);
-      const t = truncate(text);
+      const context = `marca "${params.marca}"`;
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -195,6 +298,8 @@ const SearchAdvancedSchema = z
     classe_nice: z.string().optional().describe("Filtra pela Classificação de Nice, ex: 09, 42"),
     apenas_pedidos_vivos: z.boolean().default(true).describe("true = só processos ativos (Pedidos Vivos); false = inclui arquivados/extintos"),
     resultados_por_pagina: RegisterPerPageSchema,
+    salvar_html: SalvarHtmlField,
+    forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
 
@@ -226,23 +331,37 @@ Use quando a busca básica (inpi_search_by_mark) for imprecisa demais ou quando 
   },
   async (params) => {
     try {
-      const html = await client.postMarcas({
-        precisao: params.busca_fuzzy ? "sim" : "nao",
-        txt: "",
+      const cacheParams = {
         marca: params.marca,
-        FormaApresentacao: APRESENTACAO_MAP[params.apresentacao],
-        FormaNatureza: NATUREZA_MAP[params.natureza],
-        classeInter: params.classe_nice ?? "",
-        ListaTodosPedidos: params.apenas_pedidos_vivos ? "" : "on",
-        ListaFigura: "",
-        registerPerPage: String(params.resultados_por_pagina),
-        botao: "",
-        Action: "searchMarca",
-        tipoPesquisa: "BY_MARCA_CLASSIF_AVANCADA",
+        busca_fuzzy: params.busca_fuzzy,
+        apresentacao: params.apresentacao,
+        natureza: params.natureza,
+        classe_nice: params.classe_nice,
+        apenas_pedidos_vivos: params.apenas_pedidos_vivos,
+        resultados_por_pagina: params.resultados_por_pagina,
+      };
+      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_mark_advanced", cacheParams, params.forcar_atualizacao, async () => {
+        const html = await client.postMarcas({
+          precisao: params.busca_fuzzy ? "sim" : "nao",
+          txt: "",
+          marca: params.marca,
+          FormaApresentacao: APRESENTACAO_MAP[params.apresentacao],
+          FormaNatureza: NATUREZA_MAP[params.natureza],
+          classeInter: params.classe_nice ?? "",
+          ListaTodosPedidos: params.apenas_pedidos_vivos ? "" : "on",
+          ListaFigura: "",
+          registerPerPage: String(params.resultados_por_pagina),
+          botao: "",
+          Action: "searchMarca",
+          tipoPesquisa: "BY_MARCA_CLASSIF_AVANCADA",
+        });
+        return parseSearchResults(html);
       });
-      const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, `busca avançada "${params.marca}"`);
-      const t = truncate(text);
+      const context = `busca avançada "${params.marca}"`;
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -264,6 +383,8 @@ const SearchByOwnerSchema = z
         "Quando a busca por nome retorna uma lista de titulares candidatos (nomes parecidos), refaça a chamada com o mesmo nome e este 'pos' para ver as marcas do titular escolhido.",
       ),
     resultados_por_pagina: RegisterPerPageSchema,
+    salvar_html: SalvarHtmlField,
+    forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
 
@@ -284,23 +405,29 @@ A busca por CNPJ/CPF é direta. A busca por nome é em DUAS ETAPAS, igual ao sit
       return { content: [{ type: "text" as const, text: "Informe cnpj_cpf ou nome." }] };
     }
     try {
-      let html: string;
-      if (params.nome && params.pos !== undefined) {
-        html = await client.getMarcas({ Action: "searchMarca", tipoPesquisa: "BY_CNPJ_NOME", pos: String(params.pos) });
-      } else {
-        html = await client.postMarcas({
-          cpf_cgc_numINPI: params.cnpj_cpf ?? "",
-          nomeTitular: params.nome ?? "",
-          registerPerPage: String(params.resultados_por_pagina),
-          botao: "",
-          Action: "searchNome",
-          precisao: "aproximacao",
-          tipoPesquisa: "BY_CNPJ_NOME",
-        });
-      }
-      const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, `titular "${params.nome ?? params.cnpj_cpf}"`);
-      const t = truncate(text);
+      const cacheParams = { cnpj_cpf: params.cnpj_cpf, nome: params.nome, pos: params.pos, resultados_por_pagina: params.resultados_por_pagina };
+      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_owner", cacheParams, params.forcar_atualizacao, async () => {
+        let html: string;
+        if (params.nome && params.pos !== undefined) {
+          html = await client.getMarcas({ Action: "searchMarca", tipoPesquisa: "BY_CNPJ_NOME", pos: String(params.pos) });
+        } else {
+          html = await client.postMarcas({
+            cpf_cgc_numINPI: params.cnpj_cpf ?? "",
+            nomeTitular: params.nome ?? "",
+            registerPerPage: String(params.resultados_por_pagina),
+            botao: "",
+            Action: "searchNome",
+            precisao: "aproximacao",
+            tipoPesquisa: "BY_CNPJ_NOME",
+          });
+        }
+        return parseSearchResults(html);
+      });
+      const context = `titular "${params.nome ?? params.cnpj_cpf}"`;
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -309,13 +436,28 @@ A busca por CNPJ/CPF é direta. A busca por nome é em DUAS ETAPAS, igual ao sit
 );
 
 // --- 5. Busca por código figurativo (Viena) ---
+// O pePI trata viena1/viena2/viena3 como até TRÊS códigos completos e independentes,
+// ligados por AND (não os três níveis hierárquicos de um único código). E casa o texto de
+// forma literal contra o código como está armazenado, SEM zero à esquerda em divisão/seção
+// (ex: "27.5.1", não "27.05.01") — mesmo a notação oficial do INPI sendo zero-padded.
+// normalizeVienaCode() converte o que o usuário digita, no formato oficial, pro formato
+// que o pePI realmente casa. Medido: "26.04" devolve zero resultado, "26.4" devolve 78 KB.
+function normalizeVienaCode(code: string): string {
+  return code
+    .split(".")
+    .map((part) => part.replace(/^0+(?=\d)/, ""))
+    .join(".");
+}
+
 const SearchByFigurativeSchema = z
   .object({
-    viena_1: z.string().optional().describe("Primeiro grupo da Classificação de Viena, ex: 27"),
-    viena_2: z.string().optional().describe("Segundo grupo da Classificação de Viena, ex: 05"),
-    viena_3: z.string().optional().describe("Terceiro grupo da Classificação de Viena, ex: 01"),
+    viena_1: z.string().optional().describe("Primeiro código da Classificação de Viena (grupo.divisão.seção), ex: 27.05.01"),
+    viena_2: z.string().optional().describe("Segundo código, ANDado com o primeiro (só use se precisar que a marca tenha os dois elementos)"),
+    viena_3: z.string().optional().describe("Terceiro código, ANDado com os outros dois"),
     classe_nice: z.string().optional().describe("Filtra pela Classificação de Nice, ex: 09, 42"),
     resultados_por_pagina: RegisterPerPageSchema,
+    salvar_html: SalvarHtmlField,
+    forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
 
@@ -325,29 +467,37 @@ server.registerTool(
     title: "Buscar marcas figurativas por código de Viena",
     description: `Busca marcas figurativas/mistas no pePI (INPI oficial) pelo Código de Viena (a classificação internacional de elementos figurativos — ex: 27.05.01 para letras estilizadas). Use quando estiver checando colidência de logotipo/elemento gráfico, não de texto.
 
+Cada campo (viena_1/2/3) é um código COMPLETO (grupo.divisão.seção). Preencher mais de um campo busca marcas que tenham TODOS os códigos ao mesmo tempo (AND), não é mais preciso — na dúvida, use só viena_1.
+
 A Classificação de Viena completa está em https://www.gov.br/inpi — se não souber o código, descreva o elemento gráfico ao usuário e peça para consultar a tabela oficial antes de buscar.`,
     inputSchema: SearchByFigurativeSchema.shape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
   async (params) => {
     if (!params.viena_1 && !params.viena_2 && !params.viena_3) {
-      return { content: [{ type: "text" as const, text: "Informe pelo menos um grupo da Classificação de Viena." }] };
+      return { content: [{ type: "text" as const, text: "Informe pelo menos um código da Classificação de Viena." }] };
     }
     try {
-      const html = await client.postMarcas({
-        viena1: params.viena_1 ?? "",
-        viena2: params.viena_2 ?? "",
-        viena3: params.viena_3 ?? "",
-        classeInter: params.classe_nice ?? "",
-        ListaFigura: "",
-        registerPerPage: String(params.resultados_por_pagina),
-        botao: "",
-        Action: "searchMarca",
-        tipoPesquisa: "BY_FIGURA",
+      const cacheParams = { viena_1: params.viena_1, viena_2: params.viena_2, viena_3: params.viena_3, classe_nice: params.classe_nice, resultados_por_pagina: params.resultados_por_pagina };
+      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_figurative_code", cacheParams, params.forcar_atualizacao, async () => {
+        const html = await client.postMarcas({
+          viena1: params.viena_1 ? normalizeVienaCode(params.viena_1) : "",
+          viena2: params.viena_2 ? normalizeVienaCode(params.viena_2) : "",
+          viena3: params.viena_3 ? normalizeVienaCode(params.viena_3) : "",
+          classeInter: params.classe_nice ?? "",
+          ListaFigura: "",
+          registerPerPage: String(params.resultados_por_pagina),
+          botao: "",
+          Action: "searchMarca",
+          tipoPesquisa: "BY_FIGURA",
+        });
+        return parseSearchResults(html);
       });
-      const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, "código de Viena");
-      const t = truncate(text);
+      const context = "código de Viena";
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -360,16 +510,24 @@ server.registerTool(
   "inpi_next_page",
   {
     title: "Buscar próxima página de resultados",
-    description: `Avança para outra página de uma busca de marcas já realizada no pePI (INPI oficial). Use depois de qualquer uma das ferramentas de busca quando a resposta indicar que há mais páginas.`,
-    inputSchema: { pagina: z.number().int().min(1).describe("Número da página a buscar (2 = segunda página, etc)") },
+    description: `Avança para outra página de uma busca de marcas já realizada no pePI (INPI oficial). Use depois de qualquer uma das ferramentas de busca quando a resposta indicar que há mais páginas.
+
+Não tem cache próprio: pagina a ÚLTIMA busca feita nesta sessão (o pePI guarda isso no servidor, não aqui). Se a busca anterior tiver vindo do cache local, esta ferramenta reenvia ela ao pePI ao vivo primeiro, automaticamente, pra não paginar a coisa errada.`,
+    inputSchema: { pagina: z.number().int().min(1).describe("Número da página a buscar (2 = segunda página, etc)"), salvar_html: SalvarHtmlField },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
-  async ({ pagina }) => {
+  async ({ pagina, salvar_html }) => {
     try {
+      if (lastServedSearchKey !== null && lastServedSearchKey !== lastLiveSearchKey && lastServedReplay) {
+        await lastServedReplay();
+      }
       const html = await client.getMarcas({ Action: "nextPageMarca", page: String(pagina) });
       const result = parseSearchResults(html);
-      const { text } = formatSearchResult(result, `página ${pagina}`);
-      const t = truncate(text);
+      const context = `página ${pagina}`;
+      const { text } = formatSearchResult(result, context);
+      let htmlPath: string | undefined;
+      if (salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
+      const t = truncate(appendMeta(text, { fromCache: false, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -385,13 +543,25 @@ server.registerTool(
     description: `Busca o detalhe completo de um processo de marca no pePI (INPI oficial): classes de Nice com especificação, todos os titulares, procurador/representante legal, datas de depósito/concessão/vigência, prioridade unionista e histórico de petições protocoladas.
 
 Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_get_process_detail)" das ferramentas de busca — não é o número do processo público, é um ID interno do pePI.`,
-    inputSchema: { cod_pedido: z.string().min(1).describe("CodPedido retornado por uma busca anterior") },
+    inputSchema: {
+      cod_pedido: z.string().min(1).describe("CodPedido retornado por uma busca anterior"),
+      salvar_html: SalvarHtmlField,
+      forcar_atualizacao: ForcarAtualizacaoField,
+    },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
-  async ({ cod_pedido }) => {
+  async ({ cod_pedido, salvar_html, forcar_atualizacao }) => {
     try {
-      const html = await client.getMarcas({ Action: "detail", CodPedido: cod_pedido });
-      const detail = parseProcessDetail(html);
+      const { result: detail, fromCache, cachedAt } = await withCache<ProcessoDetalhe>(
+        "inpi_get_process_detail",
+        { cod_pedido },
+        forcar_atualizacao,
+        async () => {
+          const html = await client.getMarcas({ Action: "detail", CodPedido: cod_pedido });
+          return parseProcessDetail(html);
+        },
+        { tracksPagination: false },
+      );
       if (!detail.numeroProcesso) {
         return { content: [{ type: "text", text: `Nenhum processo encontrado para CodPedido=${cod_pedido}.` }] };
       }
@@ -432,7 +602,9 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
           lines.push(`- Protocolo ${p.protocolo} (${p.data})${p.servico ? `: ${p.servico}` : ""}${p.cliente ? ` — ${p.cliente}` : ""}`);
         }
       }
-      const t = truncate(lines.join("\n"));
+      let htmlPath: string | undefined;
+      if (salvar_html) htmlPath = await saveHtmlReport(renderProcessDetailHtml(detail), `processo-${detail.numeroProcesso}`);
+      const t = truncate(appendMeta(lines.join("\n"), { fromCache, cachedAt, htmlPath }));
       return { content: [{ type: "text", text: t.text }], structuredContent: detail as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -443,7 +615,8 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
 async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("inpi-marcas-mcp-server rodando via stdio");
+  pruneExpiredCache().catch(() => {});
+  console.error(`inpi-marcas-mcp-server rodando via stdio (cache: ${getCacheDir()})`);
 }
 
 main().catch((error) => {
