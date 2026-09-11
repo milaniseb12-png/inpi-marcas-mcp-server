@@ -17,8 +17,13 @@ function cleanOrNull(text: string | undefined | null): string | null {
  * Vigencia) — usar find("tbody tr") pega tambem as linhas dessa tabela aninhada, porque find()
  * procura em qualquer profundidade. children() restringe a so' o nivel direto.
  */
-function directRows(table: cheerio.Cheerio<any> | null | undefined): cheerio.Cheerio<any> {
-  if (!table || !table.length) return table?.constructor ? table.filter(() => false) : (table as any);
+function directRows($: cheerio.CheerioAPI, table: cheerio.Cheerio<any> | null | undefined): cheerio.Cheerio<any> {
+  // table pode vir null quando a seção nem existe nesta ficha (ex: processo sem "Representante
+  // Legal", sem "Prioridade Unionista"). O bug real que isso corrigia: table?.constructor era
+  // undefined pra table===null, então o branch antigo devolvia null DE VERDADE (cast como any)
+  // em vez de uma coleção cheerio vazia — e .each()/.first() num null explode. $() sem args
+  // devolve coleção vazia de verdade, segura pra encadear.
+  if (!table || !table.length) return $();
   const tbody = table.children("tbody");
   return (tbody.length ? tbody : table).children("tr");
 }
@@ -49,7 +54,7 @@ function visibleText($: cheerio.CheerioAPI, cell: any): string {
 function findResultTable($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null {
   let found: cheerio.Cheerio<any> | null = null;
   $("table").each((_, table) => {
-    const headerRow = directRows($(table)).first();
+    const headerRow = directRows($, $(table)).first();
     const headerText = clean(headerRow.text());
     if (headerText.includes("Número") && headerText.includes("Situação") && headerText.includes("Titular")) {
       found = $(table);
@@ -67,7 +72,7 @@ function findResultTable($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null {
 function findOwnerDisambiguationTable($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null {
   let found: cheerio.Cheerio<any> | null = null;
   $("table").each((_, table) => {
-    const headerRow = directRows($(table)).first();
+    const headerRow = directRows($, $(table)).first();
     const headerText = clean(headerRow.text());
     if (headerText === "Titular") {
       found = $(table);
@@ -131,7 +136,7 @@ export function parseSearchResults($html: string): SearchResult {
 
   const disambigTable = findOwnerDisambiguationTable($);
   const titularesCandidatos = disambigTable
-    ? directRows(disambigTable)
+    ? directRows($, disambigTable)
         .slice(1)
         .map((_, tr) => {
           const link = $(tr).find("a[href*='pos=']");
@@ -157,7 +162,7 @@ export function parseSearchResults($html: string): SearchResult {
   let resultados: MarcaResultRow[] = [];
   const table = findResultTable($);
   if (table) {
-    const rows = directRows(table).slice(1); // pula o cabecalho
+    const rows = directRows($, table).slice(1); // pula o cabecalho
     rows.each((_, tr) => {
       const cells = directCells($, tr);
       if (cells.length < 8) return;
@@ -233,7 +238,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
 
   const classes: ClasseNice[] = [];
   const classesTable = sectionTable("Classificação de Produtos / Serviços");
-  directRows(classesTable).each((_, tr) => {
+  directRows($, classesTable).each((_, tr) => {
     const cells = directCells($, tr);
     if (cells.length < 3) return;
     const classe = visibleText($, cells[0]);
@@ -247,7 +252,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
 
   const titulares: string[] = [];
   const titularesTable = sectionTable("Titulares");
-  directRows(titularesTable).each((_, tr) => {
+  directRows($, titularesTable).each((_, tr) => {
     const cells = directCells($, tr);
     if (cells.length < 2) return;
     const nome = clean($(cells[1]).text());
@@ -256,7 +261,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
 
   let procurador: string | null = null;
   const repTable = sectionTable("Representante Legal");
-  directRows(repTable).each((_, tr) => {
+  directRows($, repTable).each((_, tr) => {
     const cells = directCells($, tr);
     if (cells.length >= 2) procurador = cleanOrNull($(cells[1]).text());
   });
@@ -265,7 +270,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
   let dataConcessao: string | null = null;
   let dataVigencia: string | null = null;
   const datasTable = sectionTable("Datas");
-  const datasRow = directRows(datasTable).first();
+  const datasRow = directRows($, datasTable).first();
   if (datasRow && datasRow.length) {
     const cells = directCells($, datasRow[0]);
     dataDeposito = cleanOrNull(visibleText($, cells[0]));
@@ -275,7 +280,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
 
   let prioridadeUnionista: ProcessoDetalhe["prioridadeUnionista"] = null;
   const prioTable = sectionTable("Prioridade Unionista");
-  const prioRow = directRows(prioTable).first();
+  const prioRow = directRows($, prioTable).first();
   if (prioRow && prioRow.length) {
     const cells = directCells($, prioRow[0]);
     const numero = cleanOrNull($(cells[0]).text());

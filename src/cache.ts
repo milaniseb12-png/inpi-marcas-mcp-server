@@ -25,8 +25,14 @@ const TTL_MS = (Number(process.env.INPI_CACHE_TTL_HORAS) || DEFAULT_TTL_HOURS) *
  * do cache faltando o campo novo, silenciosamente, até o TTL expirar sozinho (até 6h por
  * padrão). A versão entra no HASH da chave, então uma mudança aqui invalida tudo que existia
  * de forma automática (cache-miss limpo, nunca dado incompleto).
+ *
+ * v3: adiciona proveniencia.evidencia (opcional). Na prática só é preenchido quando o chamador
+ * pede salvar_evidencia=true, o que já força ida ao pePI ao vivo (evidência bruta precisa do
+ * HTML da requisição real, que não fica guardado no cache — só o resultado parseado fica) — um
+ * cache-hit normal nunca teria esse campo de qualquer forma. Subida por precaução/disciplina,
+ * não porque um cache antigo desse errado silenciosamente desta vez.
  */
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 interface CacheEntry<T> {
   cachedAt: string;

@@ -14,11 +14,11 @@
 - Não faz scraping em massa: throttle de ~1 chamada/segundo, e o cache local existe justamente pra evitar repetir a mesma consulta contra o servidor do INPI.
 - Não é um proxy de rede aberto — só fala com `busca.inpi.gov.br`.
 
-## O que o cache/relatório grava em disco
+## O que o cache/relatório/evidência grava em disco
 
-`~/.cache/inpi-marcas-mcp-server/` (configurável via `INPI_CACHE_DIR`) guarda os **resultados** das buscas (o mesmo dado público que o pePI mostra), não a credencial. `~/inpi-marcas-mcp-server/relatorios/` (via `INPI_HTML_DIR`) guarda os relatórios HTML gerados com `salvar_html: true`, com o mesmo cuidado — só dado de marca, nunca login.
+`~/.cache/inpi-marcas-mcp-server/` (configurável via `INPI_CACHE_DIR`) guarda os **resultados** das buscas (o mesmo dado público que o pePI mostra), não a credencial. `~/inpi-marcas-mcp-server/relatorios/` (via `INPI_HTML_DIR`) guarda os relatórios HTML gerados com `salvar_html: true`, e `~/inpi-marcas-mcp-server/evidencias/` (via `INPI_EVIDENCE_DIR`) guarda o pacote de evidência bruta de `salvar_evidencia: true` — HTML original, cópia offline e imagens/CSS baixados do próprio pePI. Em todos os casos, só dado público de marca (o mesmo que qualquer pessoa vê navegando o pePI), nunca login nem cookie de sessão.
 
-Ambos os diretórios ficam fora do repositório e sob o seu usuário do sistema operacional; trate-os como qualquer outra pasta com dado de negócio, não como segredo, mas também não como algo público.
+Todos os diretórios ficam fora do repositório e sob o seu usuário do sistema operacional; trate-os como qualquer outra pasta com dado de negócio, não como segredo, mas também não como algo público.
 
 ## Reportar um problema de segurança
 

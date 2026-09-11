@@ -112,6 +112,23 @@ export class PepiClient {
     return html;
   }
 
+  /**
+   * Busca um asset binário (imagem, CSS) autenticado — a imagem de uma marca figurativa/mista
+   * é servida por um servlet que exige a mesma sessão de cookie da busca, então não dá pra
+   * buscar sem passar por este client. Sem decodeLatin1: isso corromperia qualquer binário.
+   */
+  async getBinary(url: string): Promise<{ data: Buffer; contentType: string; status: number }> {
+    await this.ensureSession();
+    await this.throttle();
+    const res = await this.http.get(url, { validateStatus: () => true });
+    const data = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data as ArrayBuffer);
+    return {
+      data,
+      contentType: String(res.headers["content-type"] ?? "application/octet-stream"),
+      status: res.status,
+    };
+  }
+
   async getMarcas(query: Record<string, string>): Promise<string> {
     await this.ensureSession();
     await this.throttle();

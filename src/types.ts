@@ -13,6 +13,20 @@ export interface MarcaResultRow {
 }
 
 /**
+ * Caminhos do pacote de evidência bruta (ver src/evidence.ts) — presente só quando a chamada
+ * usou salvar_evidencia: true. Guarda só CAMINHOS aqui (não o conteúdo): o HTML/assets em si
+ * ficam em disco, não duplicados dentro do JSON cacheado.
+ */
+export interface EvidenciaCaptura {
+  manifestPath: string;
+  rawHtmlPath: string;
+  snapshotHtmlPath: string;
+  rawHtmlSha256: string;
+  assetsBaixados: number;
+  assetsFalharam: number;
+}
+
+/**
  * De onde e quando o dado veio, para quem precisa auditar (não vale pra decisão jurídica,
  * vale pra rastreabilidade: "esse número veio de onde, quando?").
  */
@@ -20,6 +34,7 @@ export interface Proveniencia {
   fonte: "pePI (INPI oficial)";
   urlConsulta: string;
   consultadoEm: string;
+  evidencia?: EvidenciaCaptura;
 }
 
 export interface TitularCandidato {

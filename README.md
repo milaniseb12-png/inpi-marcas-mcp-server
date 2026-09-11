@@ -123,6 +123,41 @@ Isso existe pra não martelar um sistema de governo sem SLA com a mesma pergunta
 pra deixar buscas repetidas (ex: um agente checando a mesma marca em turnos diferentes de uma
 conversa) instantâneas.
 
+## Evidência bruta
+
+`salvar_html: true` gera um relatório **legível** — bom pra humano ler, mas é uma tabela
+formatada por nós, sem o HTML original, sem as imagens. Pra prova de marca de verdade —
+sobretudo mista/figurativa, onde a imagem *é* o dado — isso não basta. Regra: **parser é
+conveniência; snapshot completo é evidência.**
+
+Toda ferramenta de busca e a de detalhe também aceitam `salvar_evidencia: true`, que grava um
+pacote completo em `~/inpi-marcas-mcp-server/evidencias/` (ou `INPI_EVIDENCE_DIR`):
+
+```text
+evidencias/<contexto>-<timestamp>/
+  manifest.json     # URL original, sha256, tamanho e content-type de cada arquivo; falha nunca some
+  raw.html           # exatamente o que o pePI devolveu, sem edição nenhuma
+  snapshot.html       # cópia reescrita pra abrir offline, sem pedir nada de rede
+  assets/<sha256>.<ext>  # cada imagem/CSS baixado, nomeado pelo próprio hash
+```
+
+`structuredContent.proveniencia.evidencia` aponta pros caminhos (não duplica o conteúdo dentro
+do JSON). Escopo dos assets: só **mesma origem** (`busca.inpi.gov.br`) — é o que compõe a prova
+em si (logo/figura da marca, estilo da página); script de terceiro ou CDN externo não entra, pra
+não inflar o pacote com o que não é o dado.
+
+`salvar_evidencia: true` sempre vai ao pePI ao vivo (ignora o cache), porque a evidência precisa
+do HTML da requisição real — um resultado servido do cache não carrega o HTML bruto consigo.
+
+**Limite conhecido do "offline":** `snapshot.html` reescreve `src`/`href`/`url(...)` estáticos
+(imagem, CSS) pros arquivos locais, e neutraliza `<script src>` de mesma origem — mas o pePI é
+HTML legado com alguns efeitos de rollover via `onmouseover`/`onmouseout` inline (ex: um ícone
+decorativo "Fale Conosco" no rodapé) que trocam o `src` de volta pro domínio real no hover.
+Reescrever string dentro de JS arbitrário com segurança é um problema maior que o valor de
+corrigir um ícone decorativo que não é dado de marca — o conteúdo evidencial (imagem/dado da
+marca) sempre fica local; só esse tipo pontual de elemento decorativo pode tentar uma chamada de
+rede se o usuário passar o mouse em cima.
+
 ## Desenvolvimento
 
 ```bash

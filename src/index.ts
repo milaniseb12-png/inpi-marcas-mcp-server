@@ -16,8 +16,9 @@ import { parseProcessDetail, parseSearchResults } from "./parsers.js";
 import { CHARACTER_LIMIT, MARCAS_URL, VALID_PAGE_SIZES } from "./constants.js";
 import { getCacheDir, getCacheTtlMs, pruneExpiredCache, readCache, writeCache } from "./cache.js";
 import { renderProcessDetailHtml, renderSearchResultHtml, saveHtmlReport } from "./htmlExport.js";
+import { captureEvidence } from "./evidence.js";
 import { RESSALVA_SITUACAO_OPERACIONAL } from "./situacao.js";
-import type { ProcessoDetalhe, Proveniencia, SearchResult } from "./types.js";
+import type { EvidenciaCaptura, ProcessoDetalhe, Proveniencia, SearchResult } from "./types.js";
 
 const AVISO_JURIDICO =
   "Isto é busca de anterioridade no pePI (o que já existe hoje), não análise de colidência — colidência avalia semelhança gráfica/fonética/ideológica e afinidade mercadológica (Manual de Marcas do INPI, 5.11), e exige avaliação humana.";
@@ -55,6 +56,13 @@ const ForcarAtualizacaoField = z
   .boolean()
   .default(false)
   .describe(`Ignora o cache local (padrão ${Math.round(getCacheTtlMs() / 3_600_000)}h) e busca de novo no pePI ao vivo.`);
+
+const SalvarEvidenciaField = z
+  .boolean()
+  .default(false)
+  .describe(
+    "true = grava um PACOTE DE EVIDÊNCIA bruta em disco (HTML original do pePI, cópia offline com imagens/CSS baixados, manifest com sha256 de cada arquivo) — pra prova/auditoria, não só leitura. Diferente de salvar_html (que é só um relatório bonito). Sempre vai ao pePI ao vivo, ignorando o cache, porque a evidência precisa do HTML da requisição real.",
+  );
 
 /**
  * Cache local por parâmetros de busca — pula a chamada ao pePI se a mesma consulta já foi
@@ -113,7 +121,10 @@ async function withCache<T>(
   return { result, fromCache: false };
 }
 
-function appendMeta(text: string, opts: { fromCache: boolean; cachedAt?: string; htmlPath?: string }): string {
+function appendMeta(
+  text: string,
+  opts: { fromCache: boolean; cachedAt?: string; htmlPath?: string; evidencia?: EvidenciaCaptura },
+): string {
   const lines = [text];
   if (opts.fromCache) {
     lines.push("", `_(resultado do cache local, consultado em ${opts.cachedAt}; use forcar_atualizacao=true para ir ao pePI ao vivo)_`);
@@ -121,7 +132,28 @@ function appendMeta(text: string, opts: { fromCache: boolean; cachedAt?: string;
   if (opts.htmlPath) {
     lines.push("", `Relatório HTML salvo em: ${opts.htmlPath}`);
   }
+  if (opts.evidencia) {
+    lines.push(
+      "",
+      `Evidência bruta salva em: ${opts.evidencia.manifestPath} (raw.html, snapshot.html offline, ${opts.evidencia.assetsBaixados} asset(s) baixado(s)${opts.evidencia.assetsFalharam ? `, ${opts.evidencia.assetsFalharam} falharam — ver manifest` : ""}).`,
+    );
+  }
   return lines.join("\n");
+}
+
+/**
+ * Anexa a evidência bruta ao resultado já obtido — precisa do HTML CRU da chamada, que só
+ * existe se a busca realmente foi ao pePI (salvar_evidencia força forcarAtualizacao=true em
+ * withCache justamente pra garantir isso; ver SalvarEvidenciaField).
+ */
+async function maybeAttachEvidence<T extends { proveniencia?: Proveniencia }>(
+  salvarEvidencia: boolean,
+  rawHtml: string | undefined,
+  result: T,
+  context: string,
+): Promise<void> {
+  if (!salvarEvidencia || !rawHtml || !result.proveniencia) return;
+  result.proveniencia.evidencia = await captureEvidence(client, rawHtml, MARCAS_URL, context);
 }
 
 function formatSearchResult(result: SearchResult, context: string): { text: string; structured: SearchResult } {
@@ -193,6 +225,7 @@ const SearchByProcessSchema = z
     numero_protocolo: z.string().optional().describe("Número do protocolo de petição"),
     numero_inscricao_internacional: z.string().optional().describe("Número da inscrição internacional (Protocolo de Madri)"),
     salvar_html: SalvarHtmlField,
+    salvar_evidencia: SalvarEvidenciaField,
     forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
@@ -218,23 +251,31 @@ Retorna o(s) processo(s) encontrado(s) com número, marca, situação, titular e
         numero_protocolo: params.numero_protocolo,
         numero_inscricao_internacional: params.numero_inscricao_internacional,
       };
-      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_process_number", cacheParams, params.forcar_atualizacao, async () => {
-        const html = await client.postMarcas({
-          NumPedido: params.numero_processo ?? "",
-          NumGRU: params.numero_gru ?? "",
-          NumProtocolo: params.numero_protocolo ?? "",
-          NumInscricaoInternacional: params.numero_inscricao_internacional ?? "",
-          botao: "",
-          Action: "searchMarca",
-          tipoPesquisa: "BY_NUM_PROC",
-        });
-        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
-      });
+      let rawHtml: string | undefined;
+      const { result, fromCache, cachedAt } = await withCache(
+        "inpi_search_by_process_number",
+        cacheParams,
+        params.forcar_atualizacao || params.salvar_evidencia,
+        async () => {
+          const html = await client.postMarcas({
+            NumPedido: params.numero_processo ?? "",
+            NumGRU: params.numero_gru ?? "",
+            NumProtocolo: params.numero_protocolo ?? "",
+            NumInscricaoInternacional: params.numero_inscricao_internacional ?? "",
+            botao: "",
+            Action: "searchMarca",
+            tipoPesquisa: "BY_NUM_PROC",
+          });
+          rawHtml = html;
+          return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
+        },
+      );
       const context = "busca por número";
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(params.salvar_evidencia, rawHtml, result, context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -250,6 +291,7 @@ const SearchByMarkSchema = z
     classe_nice: z.string().optional().describe("Filtra pela Classificação de Nice, ex: 09, 42"),
     resultados_por_pagina: RegisterPerPageSchema,
     salvar_html: SalvarHtmlField,
+    salvar_evidencia: SalvarEvidenciaField,
     forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
@@ -267,24 +309,32 @@ Use esta busca para descobrir se um nome já está registrado e quem são os tit
   async (params) => {
     try {
       const cacheParams = { marca: params.marca, busca_exata: params.busca_exata, classe_nice: params.classe_nice, resultados_por_pagina: params.resultados_por_pagina };
-      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_mark", cacheParams, params.forcar_atualizacao, async () => {
-        const html = await client.postMarcas({
-          buscaExata: params.busca_exata ? "sim" : "nao",
-          txt: "",
-          marca: params.marca,
-          classeInter: params.classe_nice ?? "",
-          registerPerPage: String(params.resultados_por_pagina),
-          botao: "",
-          Action: "searchMarca",
-          tipoPesquisa: "BY_MARCA_CLASSIF_BASICA",
-        });
-        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
-      });
+      let rawHtml: string | undefined;
+      const { result, fromCache, cachedAt } = await withCache(
+        "inpi_search_by_mark",
+        cacheParams,
+        params.forcar_atualizacao || params.salvar_evidencia,
+        async () => {
+          const html = await client.postMarcas({
+            buscaExata: params.busca_exata ? "sim" : "nao",
+            txt: "",
+            marca: params.marca,
+            classeInter: params.classe_nice ?? "",
+            registerPerPage: String(params.resultados_por_pagina),
+            botao: "",
+            Action: "searchMarca",
+            tipoPesquisa: "BY_MARCA_CLASSIF_BASICA",
+          });
+          rawHtml = html;
+          return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
+        },
+      );
       const context = `marca "${params.marca}"`;
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(params.salvar_evidencia, rawHtml, result, context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -309,6 +359,7 @@ const SearchAdvancedSchema = z
     apenas_pedidos_vivos: z.boolean().default(true).describe("true = só processos ativos (Pedidos Vivos); false = inclui arquivados/extintos"),
     resultados_por_pagina: RegisterPerPageSchema,
     salvar_html: SalvarHtmlField,
+    salvar_evidencia: SalvarEvidenciaField,
     forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
@@ -350,35 +401,43 @@ Use quando a busca básica (inpi_search_by_mark) for imprecisa demais ou quando 
         apenas_pedidos_vivos: params.apenas_pedidos_vivos,
         resultados_por_pagina: params.resultados_por_pagina,
       };
-      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_mark_advanced", cacheParams, params.forcar_atualizacao, async () => {
-        const html = await client.postMarcas({
-          precisao: params.busca_fuzzy ? "sim" : "nao",
-          txt: "",
-          marca: params.marca,
-          FormaApresentacao: APRESENTACAO_MAP[params.apresentacao],
-          FormaNatureza: NATUREZA_MAP[params.natureza],
-          classeInter: params.classe_nice ?? "",
-          // "ListaTodosPedidos" e "ListaFigura" sao checkboxes no form real (value="E" quando
-          // marcados). Um checkbox DESMARCADO nao manda campo NENHUM no POST — nao manda ""
-          // vazio. A gente mandava sempre os dois com "" quando "desmarcado", e isso mudava o
-          // formato da resposta inteira: confirmado ao vivo contra o navegador real (Playwright)
-          // que "marca=APPLE&FormaApresentacao=2" sozinho (sem esses dois campos) devolve tabela
-          // normal com 310 processos "APPLE" de verdade; mandando os campos extra (mesmo vazios)
-          // a resposta virava uma grade de cartoes diferente com 165 resultados quase todos sem
-          // relacao com "APPLE". Corrigido: so inclui o campo quando o checkbox estaria marcado.
-          ...(params.apenas_pedidos_vivos ? {} : { ListaTodosPedidos: "E" }),
-          registerPerPage: String(params.resultados_por_pagina),
-          botao: "",
-          Action: "searchMarca",
-          tipoPesquisa: "BY_MARCA_CLASSIF_AVANCADA",
-        });
-        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
-      });
+      let rawHtml: string | undefined;
+      const { result, fromCache, cachedAt } = await withCache(
+        "inpi_search_by_mark_advanced",
+        cacheParams,
+        params.forcar_atualizacao || params.salvar_evidencia,
+        async () => {
+          const html = await client.postMarcas({
+            precisao: params.busca_fuzzy ? "sim" : "nao",
+            txt: "",
+            marca: params.marca,
+            FormaApresentacao: APRESENTACAO_MAP[params.apresentacao],
+            FormaNatureza: NATUREZA_MAP[params.natureza],
+            classeInter: params.classe_nice ?? "",
+            // "ListaTodosPedidos" e "ListaFigura" sao checkboxes no form real (value="E" quando
+            // marcados). Um checkbox DESMARCADO nao manda campo NENHUM no POST — nao manda ""
+            // vazio. A gente mandava sempre os dois com "" quando "desmarcado", e isso mudava o
+            // formato da resposta inteira: confirmado ao vivo contra o navegador real (Playwright)
+            // que "marca=APPLE&FormaApresentacao=2" sozinho (sem esses dois campos) devolve tabela
+            // normal com 310 processos "APPLE" de verdade; mandando os campos extra (mesmo vazios)
+            // a resposta virava uma grade de cartoes diferente com 165 resultados quase todos sem
+            // relacao com "APPLE". Corrigido: so inclui o campo quando o checkbox estaria marcado.
+            ...(params.apenas_pedidos_vivos ? {} : { ListaTodosPedidos: "E" }),
+            registerPerPage: String(params.resultados_por_pagina),
+            botao: "",
+            Action: "searchMarca",
+            tipoPesquisa: "BY_MARCA_CLASSIF_AVANCADA",
+          });
+          rawHtml = html;
+          return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
+        },
+      );
       const context = `busca avançada "${params.marca}"`;
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(params.salvar_evidencia, rawHtml, result, context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -401,6 +460,7 @@ const SearchByOwnerSchema = z
       ),
     resultados_por_pagina: RegisterPerPageSchema,
     salvar_html: SalvarHtmlField,
+    salvar_evidencia: SalvarEvidenciaField,
     forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
@@ -423,28 +483,36 @@ A busca por CNPJ/CPF é direta. A busca por nome é em DUAS ETAPAS, igual ao sit
     }
     try {
       const cacheParams = { cnpj_cpf: params.cnpj_cpf, nome: params.nome, pos: params.pos, resultados_por_pagina: params.resultados_por_pagina };
-      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_owner", cacheParams, params.forcar_atualizacao, async () => {
-        let html: string;
-        if (params.nome && params.pos !== undefined) {
-          html = await client.getMarcas({ Action: "searchMarca", tipoPesquisa: "BY_CNPJ_NOME", pos: String(params.pos) });
-        } else {
-          html = await client.postMarcas({
-            cpf_cgc_numINPI: params.cnpj_cpf ?? "",
-            nomeTitular: params.nome ?? "",
-            registerPerPage: String(params.resultados_por_pagina),
-            botao: "",
-            Action: "searchNome",
-            precisao: "aproximacao",
-            tipoPesquisa: "BY_CNPJ_NOME",
-          });
-        }
-        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
-      });
+      let rawHtml: string | undefined;
+      const { result, fromCache, cachedAt } = await withCache(
+        "inpi_search_by_owner",
+        cacheParams,
+        params.forcar_atualizacao || params.salvar_evidencia,
+        async () => {
+          let html: string;
+          if (params.nome && params.pos !== undefined) {
+            html = await client.getMarcas({ Action: "searchMarca", tipoPesquisa: "BY_CNPJ_NOME", pos: String(params.pos) });
+          } else {
+            html = await client.postMarcas({
+              cpf_cgc_numINPI: params.cnpj_cpf ?? "",
+              nomeTitular: params.nome ?? "",
+              registerPerPage: String(params.resultados_por_pagina),
+              botao: "",
+              Action: "searchNome",
+              precisao: "aproximacao",
+              tipoPesquisa: "BY_CNPJ_NOME",
+            });
+          }
+          rawHtml = html;
+          return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
+        },
+      );
       const context = `titular "${params.nome ?? params.cnpj_cpf}"`;
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(params.salvar_evidencia, rawHtml, result, context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -474,6 +542,7 @@ const SearchByFigurativeSchema = z
     classe_nice: z.string().optional().describe("Filtra pela Classificação de Nice, ex: 09, 42"),
     resultados_por_pagina: RegisterPerPageSchema,
     salvar_html: SalvarHtmlField,
+    salvar_evidencia: SalvarEvidenciaField,
     forcar_atualizacao: ForcarAtualizacaoField,
   })
   .strict();
@@ -496,26 +565,34 @@ A Classificação de Viena completa está em https://www.gov.br/inpi — se não
     }
     try {
       const cacheParams = { viena_1: params.viena_1, viena_2: params.viena_2, viena_3: params.viena_3, classe_nice: params.classe_nice, resultados_por_pagina: params.resultados_por_pagina };
-      const { result, fromCache, cachedAt } = await withCache("inpi_search_by_figurative_code", cacheParams, params.forcar_atualizacao, async () => {
-        const html = await client.postMarcas({
-          viena1: params.viena_1 ? normalizeVienaCode(params.viena_1) : "",
-          viena2: params.viena_2 ? normalizeVienaCode(params.viena_2) : "",
-          viena3: params.viena_3 ? normalizeVienaCode(params.viena_3) : "",
-          classeInter: params.classe_nice ?? "",
-          // "ListaFigura" e' checkbox no form real; desmarcado nao manda campo nenhum, nao "".
-          // Ver o comentário equivalente em inpi_search_by_mark_advanced.
-          registerPerPage: String(params.resultados_por_pagina),
-          botao: "",
-          Action: "searchMarca",
-          tipoPesquisa: "BY_FIGURA",
-        });
-        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
-      });
+      let rawHtml: string | undefined;
+      const { result, fromCache, cachedAt } = await withCache(
+        "inpi_search_by_figurative_code",
+        cacheParams,
+        params.forcar_atualizacao || params.salvar_evidencia,
+        async () => {
+          const html = await client.postMarcas({
+            viena1: params.viena_1 ? normalizeVienaCode(params.viena_1) : "",
+            viena2: params.viena_2 ? normalizeVienaCode(params.viena_2) : "",
+            viena3: params.viena_3 ? normalizeVienaCode(params.viena_3) : "",
+            classeInter: params.classe_nice ?? "",
+            // "ListaFigura" e' checkbox no form real; desmarcado nao manda campo nenhum, nao "".
+            // Ver o comentário equivalente em inpi_search_by_mark_advanced.
+            registerPerPage: String(params.resultados_por_pagina),
+            botao: "",
+            Action: "searchMarca",
+            tipoPesquisa: "BY_FIGURA",
+          });
+          rawHtml = html;
+          return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
+        },
+      );
       const context = "código de Viena";
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (params.salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(params.salvar_evidencia, rawHtml, result, context);
+      const t = truncate(appendMeta(text, { fromCache, cachedAt, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -531,10 +608,14 @@ server.registerTool(
     description: `Avança para outra página de uma busca de marcas já realizada no pePI (INPI oficial). Use depois de qualquer uma das ferramentas de busca quando a resposta indicar que há mais páginas.
 
 Não tem cache próprio: pagina a ÚLTIMA busca feita nesta sessão (o pePI guarda isso no servidor, não aqui). Se a busca anterior tiver vindo do cache local, esta ferramenta reenvia ela ao pePI ao vivo primeiro, automaticamente, pra não paginar a coisa errada.`,
-    inputSchema: { pagina: z.number().int().min(1).describe("Número da página a buscar (2 = segunda página, etc)"), salvar_html: SalvarHtmlField },
+    inputSchema: {
+      pagina: z.number().int().min(1).describe("Número da página a buscar (2 = segunda página, etc)"),
+      salvar_html: SalvarHtmlField,
+      salvar_evidencia: SalvarEvidenciaField,
+    },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
-  async ({ pagina, salvar_html }) => {
+  async ({ pagina, salvar_html, salvar_evidencia }) => {
     try {
       if (lastServedSearchKey !== null && lastServedSearchKey !== lastLiveSearchKey && lastServedReplay) {
         await lastServedReplay();
@@ -545,7 +626,8 @@ Não tem cache próprio: pagina a ÚLTIMA busca feita nesta sessão (o pePI guar
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
       if (salvar_html) htmlPath = await saveHtmlReport(renderSearchResultHtml(result, context), context);
-      const t = truncate(appendMeta(text, { fromCache: false, htmlPath }));
+      if (salvar_evidencia) result.proveniencia!.evidencia = await captureEvidence(client, html, MARCAS_URL, context);
+      const t = truncate(appendMeta(text, { fromCache: false, htmlPath, evidencia: result.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: result as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
@@ -564,18 +646,21 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
     inputSchema: {
       cod_pedido: z.string().min(1).describe("CodPedido retornado por uma busca anterior"),
       salvar_html: SalvarHtmlField,
+      salvar_evidencia: SalvarEvidenciaField,
       forcar_atualizacao: ForcarAtualizacaoField,
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
-  async ({ cod_pedido, salvar_html, forcar_atualizacao }) => {
+  async ({ cod_pedido, salvar_html, salvar_evidencia, forcar_atualizacao }) => {
     try {
+      let rawHtml: string | undefined;
       const { result: detail, fromCache, cachedAt } = await withCache<ProcessoDetalhe>(
         "inpi_get_process_detail",
         { cod_pedido },
-        forcar_atualizacao,
+        forcar_atualizacao || salvar_evidencia,
         async () => {
           const html = await client.getMarcas({ Action: "detail", CodPedido: cod_pedido });
+          rawHtml = html;
           return { ...parseProcessDetail(html), proveniencia: buildProveniencia(MARCAS_URL) };
         },
         { tracksPagination: false },
@@ -623,7 +708,8 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
       lines.push("", `_${RESSALVA_SITUACAO_OPERACIONAL}_`);
       let htmlPath: string | undefined;
       if (salvar_html) htmlPath = await saveHtmlReport(renderProcessDetailHtml(detail), `processo-${detail.numeroProcesso}`);
-      const t = truncate(appendMeta(lines.join("\n"), { fromCache, cachedAt, htmlPath }));
+      await maybeAttachEvidence(salvar_evidencia, rawHtml, detail, `processo-${detail.numeroProcesso}`);
+      const t = truncate(appendMeta(lines.join("\n"), { fromCache, cachedAt, htmlPath, evidencia: detail.proveniencia?.evidencia }));
       return { content: [{ type: "text", text: t.text }], structuredContent: detail as unknown as Record<string, unknown> };
     } catch (error) {
       return handleError(error);
