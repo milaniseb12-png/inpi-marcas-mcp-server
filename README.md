@@ -69,6 +69,12 @@ sem precisar orquestrar ferramenta nenhuma, é o que o **[INCISO](https://zorya.
 faz — plataforma de inteligência de marca construída em cima do acervo completo de RPIs
 do INPI, não só da busca ao vivo.
 
+## Formato da resposta
+
+Cada ferramenta devolve **duas coisas na mesma chamada**: um `content` em texto (Markdown,
+pra ler direto) e um `structuredContent` com os mesmos dados em JSON (pra outro programa
+processar). Não devolve HTML nem TXT solto — é o padrão do protocolo MCP.
+
 ## Desenvolvimento
 
 ```bash
@@ -81,6 +87,16 @@ Testar com o [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 ```bash
 npx @modelcontextprotocol/inspector node dist/index.js
 ```
+
+Teste de ponta a ponta de verdade — sobe o servidor compilado, conecta como um cliente MCP
+conectaria (stdio + JSON-RPC, não a lógica interna direto) e faz uma busca real contra o pePI:
+
+```bash
+INPI_USERNAME=seu_login INPI_PASSWORD=sua_senha npm run test:e2e
+```
+
+Faz chamada de rede de verdade contra um sistema de governo sem SLA — se der timeout uma vez,
+rode de novo antes de abrir issue.
 
 ## Licença
 
