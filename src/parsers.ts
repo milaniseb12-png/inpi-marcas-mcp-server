@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import type { ClasseNice, MarcaResultRow, Peticao, ProcessoDetalhe, SearchResult } from "./types.js";
+import { classificarSituacao } from "./situacao.js";
 
 function clean(text: string | undefined | null): string {
   return (text ?? "").replace(/\s+/g, " ").trim();
@@ -105,11 +106,13 @@ function parseCardGridResults($: cheerio.CheerioAPI): MarcaResultRow[] {
     const titularMatch = metaText.match(/Titular\(es\):\s*([^]*?)\s*Classe:/);
     const classeMatch = metaText.match(/Classe:\s*([^]*)$/);
 
+    const situacaoCard = situacaoMatch ? clean(situacaoMatch[1]) : "";
     resultados.push({
       numeroProcesso,
       dataPrioridade: prioridadeMatch ? cleanOrNull(prioridadeMatch[1]) : null,
       marca,
-      situacao: situacaoMatch ? clean(situacaoMatch[1]) : "",
+      situacao: situacaoCard,
+      situacaoOperacional: classificarSituacao(situacaoCard),
       titular: titularMatch ? cleanOrNull(titularMatch[1].replace(/^null$/, "")) : null,
       classe: classeMatch ? cleanOrNull(classeMatch[1]) : null,
       codPedido,
@@ -164,11 +167,13 @@ export function parseSearchResults($html: string): SearchResult {
       const codPedidoMatch = (numLink.attr("href") ?? "").match(/CodPedido=(\d+)/);
       const codPedido = codPedidoMatch ? codPedidoMatch[1] : null;
 
+      const situacaoRow = clean($(cells[6]).text());
       resultados.push({
         numeroProcesso: numeroProcesso ?? "-",
         dataPrioridade: cleanOrNull($(cells[2]).text()),
         marca: clean($(cells[4]).text()),
-        situacao: clean($(cells[6]).text()),
+        situacao: situacaoRow,
+        situacaoOperacional: classificarSituacao(situacaoRow),
         titular: cleanOrNull($(cells[7]).text()),
         classe: cells.length > 8 ? cleanOrNull($(cells[8]).text()) : null,
         codPedido,
@@ -302,6 +307,7 @@ export function parseProcessDetail(html: string): ProcessoDetalhe {
     numeroProcesso,
     marca,
     situacao,
+    situacaoOperacional: classificarSituacao(situacao),
     apresentacao,
     natureza,
     classes,

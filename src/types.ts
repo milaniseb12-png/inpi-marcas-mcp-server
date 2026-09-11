@@ -1,12 +1,25 @@
+import type { SituacaoOperacional } from "./situacao.js";
+
 export interface MarcaResultRow {
   numeroProcesso: string;
   dataPrioridade: string | null;
   marca: string;
   situacao: string;
+  situacaoOperacional: SituacaoOperacional;
   titular: string | null;
   classe: string | null;
   codPedido: string | null;
   urlDetalhe: string | null;
+}
+
+/**
+ * De onde e quando o dado veio, para quem precisa auditar (não vale pra decisão jurídica,
+ * vale pra rastreabilidade: "esse número veio de onde, quando?").
+ */
+export interface Proveniencia {
+  fonte: "pePI (INPI oficial)";
+  urlConsulta: string;
+  consultadoEm: string;
 }
 
 export interface TitularCandidato {
@@ -26,6 +39,8 @@ export interface SearchResult {
    * pra ver as marcas dele de verdade. Fica null quando a resposta ja' e' a lista de marcas.
    */
   titularesCandidatos: TitularCandidato[] | null;
+  /** Ausente no retorno cru do parser; anexado pelo servidor MCP antes de responder/cachear. */
+  proveniencia?: Proveniencia;
 }
 
 export interface ClasseNice {
@@ -45,6 +60,7 @@ export interface ProcessoDetalhe {
   numeroProcesso: string;
   marca: string | null;
   situacao: string | null;
+  situacaoOperacional: SituacaoOperacional;
   apresentacao: string | null;
   natureza: string | null;
   classes: ClasseNice[];
@@ -55,4 +71,6 @@ export interface ProcessoDetalhe {
   dataVigencia: string | null;
   prioridadeUnionista: { numero: string; pais: string; data: string } | null;
   peticoes: Peticao[];
+  /** Ausente no retorno cru do parser; anexado pelo servidor MCP antes de responder/cachear. */
+  proveniencia?: Proveniencia;
 }

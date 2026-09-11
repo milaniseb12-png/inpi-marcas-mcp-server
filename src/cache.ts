@@ -18,6 +18,16 @@ const CACHE_DIR = process.env.INPI_CACHE_DIR ?? join(homedir(), ".cache", "inpi-
 const DEFAULT_TTL_HOURS = 6;
 const TTL_MS = (Number(process.env.INPI_CACHE_TTL_HORAS) || DEFAULT_TTL_HOURS) * 60 * 60 * 1000;
 
+/**
+ * Sobe sempre que o FORMATO do que a gente guarda (os campos de SearchResult/ProcessoDetalhe)
+ * muda de um jeito que o dado antigo em disco não teria — ex: adicionar `proveniencia` ou
+ * `situacaoOperacional`. Sem isso, uma entrada gravada pela versão anterior do servidor volta
+ * do cache faltando o campo novo, silenciosamente, até o TTL expirar sozinho (até 6h por
+ * padrão). A versão entra no HASH da chave, então uma mudança aqui invalida tudo que existia
+ * de forma automática (cache-miss limpo, nunca dado incompleto).
+ */
+const SCHEMA_VERSION = 2;
+
 interface CacheEntry<T> {
   cachedAt: string;
   tool: string;
@@ -27,7 +37,7 @@ interface CacheEntry<T> {
 
 function cacheKey(tool: string, params: Record<string, unknown>): string {
   const normalized = JSON.stringify(params, Object.keys(params).sort());
-  const hash = createHash("sha256").update(`${tool}:${normalized}`).digest("hex").slice(0, 24);
+  const hash = createHash("sha256").update(`v${SCHEMA_VERSION}:${tool}:${normalized}`).digest("hex").slice(0, 24);
   return hash;
 }
 

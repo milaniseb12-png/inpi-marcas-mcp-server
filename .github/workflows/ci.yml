@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm audit --audit-level=high
+      # test:e2e não roda aqui: precisa de INPI_USERNAME/INPI_PASSWORD reais contra o pePI
+      # ao vivo, e não vale expor credencial pessoal de ninguém como secret de CI pública.
+      # Rode `npm run test:e2e` localmente com sua própria credencial antes de abrir um PR.

@@ -11,6 +11,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "test:e2e": "node test/e2e.mjs"
   },

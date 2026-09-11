@@ -60,6 +60,14 @@ manualmente faria. Não existe teto diário embutido aqui — o que existir é d
 Se o layout do site mudar, os parsers podem quebrar; abra uma issue com o HTML que veio,
 sem incluir nenhuma credencial.
 
+**Configure um timeout generoso no seu cliente MCP.** Medido sob carga: uma busca legítima
+pode levar até ~70-90s pra voltar do pePI. O servidor já espera até 90s antes de desistir
+(`REQUEST_TIMEOUT_MS`), mas o SDK do MCP tem o próprio timeout do lado do **cliente**
+(padrão de 60s) — se ele for igual ou menor que o do servidor, o cliente desiste antes do
+servidor ter chance de responder, mesmo quando o pePI ia responder com sucesso. Configure pelo
+menos 120s por chamada (`{ timeout: 120_000 }` na opção `RequestOptions` do `callTool`, se você
+estiver integrando via SDK TypeScript — veja `test/e2e.mjs` para um exemplo).
+
 ## O que este servidor NÃO é
 
 Ele só espelha a busca pública do pePI: dado que qualquer pessoa já acessa de graça,
@@ -68,6 +76,29 @@ colidência ao longo do tempo, não analisa risco. Quem quiser isso de forma pro
 sem precisar orquestrar ferramenta nenhuma, é o que o **[INCISO](https://inciso.com.br)**
 faz — plataforma de inteligência de marca construída em cima do acervo completo de RPIs
 do INPI, não só da busca ao vivo.
+
+## Fronteira jurídica: anterioridade × colidência
+
+As ferramentas de busca fazem **busca de anterioridade** — mostram o que já está registrado
+ou em processo, hoje, no pePI. Isso **não é** uma **análise de colidência**: colidência avalia
+semelhança gráfica, fonética, ideológica e afinidade mercadológica entre sinais, conforme o
+item 5.11 do [Manual de Marcas do INPI](https://manualdemarcas.inpi.gov.br/projects/manual-de-marcas-3-edicao-6-revisao-20-08-2024/wiki/5%C2%B711_An%C3%A1lise_do_requisito_da_disponibilidade_do_sinal_marc%C3%A1rio),
+e exige avaliação humana (idealmente de advogado especialista em PI). Toda resposta de busca
+traz esse aviso, e `structuredContent` nunca inclui um veredito de "pode registrar" — só o dado
+bruto do pePI, mais uma classificação auxiliar (ver abaixo).
+
+## Proveniência e situação operacional
+
+Todo `structuredContent` (de busca ou de detalhe) traz um campo `proveniencia` — `fonte`,
+`urlConsulta` e `consultadoEm` (ISO 8601) — pra dar rastreabilidade: de onde e quando aquele
+dado específico veio, útil pra quem precisa auditar ou anexar a um parecer.
+
+Cada resultado também traz `situacaoOperacional` — uma classificação (`registro_vigente`,
+`registro_extinto`, `pedido_em_andamento`, `pedido_arquivado`, `pedido_indeferido`,
+`indeterminado`) derivada por **padrão de texto** sobre o campo bruto `situacao` do pePI. Não é
+exaustiva nem tem valor jurídico próprio — o pePI é sistema legado sem enum fechado de status,
+então isso é conveniência de filtro, não fonte de verdade. O campo `situacao` bruto continua
+disponível e é sempre a referência final.
 
 ## Formato da resposta
 
@@ -114,6 +145,30 @@ INPI_USERNAME=seu_login INPI_PASSWORD=sua_senha npm run test:e2e
 
 Faz chamada de rede de verdade contra um sistema de governo sem SLA — se der timeout uma vez,
 rode de novo antes de abrir issue.
+
+CI (`.github/workflows/ci.yml`) roda `typecheck`, `build` e `npm audit` a cada push/PR —
+**não** roda `test:e2e`, porque isso exigiria uma credencial pessoal do pePI como secret de
+CI pública, o que não faz sentido pedir de quem for contribuir. Rode `npm run test:e2e`
+localmente com sua própria credencial antes de abrir um PR.
+
+## Segurança
+
+Veja [SECURITY.md](./SECURITY.md) para a postura de credenciais — resumo: a senha nunca sai
+do seu processo local, nunca é logada, nunca é gravada em disco (nem no cache, nem no relatório
+HTML).
+
+## Limitações conhecidas
+
+- **Cobertura de teste é e2e ao vivo, não fixtures.** `test/e2e.mjs` prova as 7 ferramentas
+  contra o pePI real, mas não tem um conjunto de HTMLs salvos (marca com/sem prioridade
+  unionista, processo extinto, arquivado, indeferido, busca avançada em grade de cartões etc.)
+  pra testar os parsers offline, rápido e sem depender do pePI estar de pé. Fica como próximo
+  passo — vale mais que crescer superfície de ferramenta nova agora.
+- **Não fiz plano de migração pra um "novo portal" do INPI.** Existe uma URL
+  `servicos.busca.inpi.gov.br` que parece ser uma interface nova do INPI, mas é uma SPA
+  (JavaScript), não dá pra confirmar por fetch simples se é uma busca de marcas, se está em
+  produção, ou se substitui o pePI. Não construí abstração de fonte em cima disso sem verificar
+  — se alguém confirmar que é estável e substitui o pePI, abra uma issue com a evidência.
 
 ## Licença
 

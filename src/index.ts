@@ -13,10 +13,18 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { PepiClient, PepiAuthError } from "./client.js";
 import { parseProcessDetail, parseSearchResults } from "./parsers.js";
-import { CHARACTER_LIMIT, VALID_PAGE_SIZES } from "./constants.js";
+import { CHARACTER_LIMIT, MARCAS_URL, VALID_PAGE_SIZES } from "./constants.js";
 import { getCacheDir, getCacheTtlMs, pruneExpiredCache, readCache, writeCache } from "./cache.js";
 import { renderProcessDetailHtml, renderSearchResultHtml, saveHtmlReport } from "./htmlExport.js";
-import type { ProcessoDetalhe, SearchResult } from "./types.js";
+import { RESSALVA_SITUACAO_OPERACIONAL } from "./situacao.js";
+import type { ProcessoDetalhe, Proveniencia, SearchResult } from "./types.js";
+
+const AVISO_JURIDICO =
+  "Isto é busca de anterioridade no pePI (o que já existe hoje), não análise de colidência — colidência avalia semelhança gráfica/fonética/ideológica e afinidade mercadológica (Manual de Marcas do INPI, 5.11), e exige avaliação humana.";
+
+function buildProveniencia(url: string): Proveniencia {
+  return { fonte: "pePI (INPI oficial)", urlConsulta: url, consultadoEm: new Date().toISOString() };
+}
 
 const username = process.env.INPI_USERNAME;
 const password = process.env.INPI_PASSWORD;
@@ -137,7 +145,7 @@ function formatSearchResult(result: SearchResult, context: string): { text: stri
     for (const r of result.resultados) {
       lines.push(`## ${r.marca || "(sem marca)"} — processo ${r.numeroProcesso}`);
       if (r.dataPrioridade) lines.push(`- Prioridade: ${r.dataPrioridade}`);
-      lines.push(`- Situação: ${r.situacao || "não informada"}`);
+      lines.push(`- Situação: ${r.situacao || "não informada"} (${r.situacaoOperacional})`);
       if (r.titular) lines.push(`- Titular: ${r.titular}`);
       if (r.classe) lines.push(`- Classe: ${r.classe}`);
       if (r.codPedido) lines.push(`- CodPedido (use em inpi_get_process_detail): ${r.codPedido}`);
@@ -147,6 +155,8 @@ function formatSearchResult(result: SearchResult, context: string): { text: stri
   if (result.totalPaginas && result.paginaAtual < result.totalPaginas) {
     lines.push(`Há mais páginas de resultado. Use inpi_next_page com page=${result.paginaAtual + 1}.`);
   }
+  lines.push("", `_${AVISO_JURIDICO}_`);
+  if (result.resultados.length) lines.push("", `_${RESSALVA_SITUACAO_OPERACIONAL}_`);
   return { text: lines.join("\n"), structured: result };
 }
 
@@ -218,7 +228,7 @@ Retorna o(s) processo(s) encontrado(s) com número, marca, situação, titular e
           Action: "searchMarca",
           tipoPesquisa: "BY_NUM_PROC",
         });
-        return parseSearchResults(html);
+        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       });
       const context = "busca por número";
       const { text } = formatSearchResult(result, context);
@@ -268,7 +278,7 @@ Use esta busca para descobrir se um nome já está registrado e quem são os tit
           Action: "searchMarca",
           tipoPesquisa: "BY_MARCA_CLASSIF_BASICA",
         });
-        return parseSearchResults(html);
+        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       });
       const context = `marca "${params.marca}"`;
       const { text } = formatSearchResult(result, context);
@@ -355,7 +365,7 @@ Use quando a busca básica (inpi_search_by_mark) for imprecisa demais ou quando 
           Action: "searchMarca",
           tipoPesquisa: "BY_MARCA_CLASSIF_AVANCADA",
         });
-        return parseSearchResults(html);
+        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       });
       const context = `busca avançada "${params.marca}"`;
       const { text } = formatSearchResult(result, context);
@@ -421,7 +431,7 @@ A busca por CNPJ/CPF é direta. A busca por nome é em DUAS ETAPAS, igual ao sit
             tipoPesquisa: "BY_CNPJ_NOME",
           });
         }
-        return parseSearchResults(html);
+        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       });
       const context = `titular "${params.nome ?? params.cnpj_cpf}"`;
       const { text } = formatSearchResult(result, context);
@@ -491,7 +501,7 @@ A Classificação de Viena completa está em https://www.gov.br/inpi — se não
           Action: "searchMarca",
           tipoPesquisa: "BY_FIGURA",
         });
-        return parseSearchResults(html);
+        return { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       });
       const context = "código de Viena";
       const { text } = formatSearchResult(result, context);
@@ -522,7 +532,7 @@ Não tem cache próprio: pagina a ÚLTIMA busca feita nesta sessão (o pePI guar
         await lastServedReplay();
       }
       const html = await client.getMarcas({ Action: "nextPageMarca", page: String(pagina) });
-      const result = parseSearchResults(html);
+      const result = { ...parseSearchResults(html), proveniencia: buildProveniencia(MARCAS_URL) };
       const context = `página ${pagina}`;
       const { text } = formatSearchResult(result, context);
       let htmlPath: string | undefined;
@@ -558,7 +568,7 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
         forcar_atualizacao,
         async () => {
           const html = await client.getMarcas({ Action: "detail", CodPedido: cod_pedido });
-          return parseProcessDetail(html);
+          return { ...parseProcessDetail(html), proveniencia: buildProveniencia(MARCAS_URL) };
         },
         { tracksPagination: false },
       );
@@ -568,7 +578,7 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
       const lines: string[] = [];
       lines.push(`# Processo ${detail.numeroProcesso}${detail.marca ? ` — ${detail.marca}` : ""}`);
       lines.push("");
-      if (detail.situacao) lines.push(`**Situação:** ${detail.situacao}`);
+      if (detail.situacao) lines.push(`**Situação:** ${detail.situacao} (${detail.situacaoOperacional})`);
       if (detail.apresentacao) lines.push(`**Apresentação:** ${detail.apresentacao}`);
       if (detail.natureza) lines.push(`**Natureza:** ${detail.natureza}`);
       lines.push("");
@@ -602,6 +612,7 @@ Precisa do "cod_pedido" (CodPedido), que vem no campo "CodPedido (use em inpi_ge
           lines.push(`- Protocolo ${p.protocolo} (${p.data})${p.servico ? `: ${p.servico}` : ""}${p.cliente ? ` — ${p.cliente}` : ""}`);
         }
       }
+      lines.push("", `_${RESSALVA_SITUACAO_OPERACIONAL}_`);
       let htmlPath: string | undefined;
       if (salvar_html) htmlPath = await saveHtmlReport(renderProcessDetailHtml(detail), `processo-${detail.numeroProcesso}`);
       const t = truncate(appendMeta(lines.join("\n"), { fromCache, cachedAt, htmlPath }));

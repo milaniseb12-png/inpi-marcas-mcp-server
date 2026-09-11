@@ -11,7 +11,9 @@ export const CHARACTER_LIMIT = 20000;
 // pePI e um sistema de producao do governo, sem SLA de API. Espacar chamadas evita bloqueio por IP
 // e trata o servico com o mesmo cuidado que um humano navegando manualmente teria.
 export const MIN_REQUEST_INTERVAL_MS = 1200;
-// Medido: a maioria das buscas responde em poucos segundos, mas uma busca por código de
-// Viena (27.5.1) chegou a levar 72s pra voltar com resultado real, não erro. 30s cortava
-// consulta válida no meio.
-export const REQUEST_TIMEOUT_MS = 60000;
+// Medido: a maioria das buscas responde em poucos segundos, mas sob carga (a própria conta
+// martelada por muitos testes seguidos) uma busca por código de Viena chegou a 72s e uma
+// busca avançada bateu 60s sem terminar. 90s dá margem real acima do pior caso observado até
+// aqui — se um cliente MCP for configurar timeout, o dele tem que ser MAIOR que este (veja
+// README, "Limites").
+export const REQUEST_TIMEOUT_MS = 90000;
