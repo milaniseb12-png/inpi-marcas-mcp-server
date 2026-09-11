@@ -181,10 +181,20 @@ INPI_USERNAME=seu_login INPI_PASSWORD=sua_senha npm run test:e2e
 Faz chamada de rede de verdade contra um sistema de governo sem SLA — se der timeout uma vez,
 rode de novo antes de abrir issue.
 
-CI (`.github/workflows/ci.yml`) roda `typecheck`, `build` e `npm audit` a cada push/PR —
-**não** roda `test:e2e`, porque isso exigiria uma credencial pessoal do pePI como secret de
-CI pública, o que não faz sentido pedir de quem for contribuir. Rode `npm run test:e2e`
-localmente com sua própria credencial antes de abrir um PR.
+Teste **offline** dos parsers — sem rede, sem credencial, contra um corpus de HTML real salvo
+(`test/fixtures/`, ver [test/fixtures/README.md](./test/fixtures/README.md) pro que cada caso
+guarda: marca com/sem prioridade unionista, processo extinto/arquivado, pedido em andamento,
+designação via Protocolo de Madri, processo sem seção de representante legal, etc.):
+
+```bash
+npm run test:parsers
+```
+
+CI (`.github/workflows/ci.yml`) roda `typecheck`, `build`, `test:parsers` e `npm audit` a cada
+push/PR — **não** roda `test:e2e`, porque isso exigiria uma credencial pessoal do pePI como
+secret de CI pública, o que não faz sentido pedir de quem for contribuir. `test:parsers` roda
+em CI porque é offline. Rode `npm run test:e2e` localmente com sua própria credencial antes de
+abrir um PR.
 
 ## Segurança
 
@@ -194,11 +204,6 @@ HTML).
 
 ## Limitações conhecidas
 
-- **Cobertura de teste é e2e ao vivo, não fixtures.** `test/e2e.mjs` prova as 7 ferramentas
-  contra o pePI real, mas não tem um conjunto de HTMLs salvos (marca com/sem prioridade
-  unionista, processo extinto, arquivado, indeferido, busca avançada em grade de cartões etc.)
-  pra testar os parsers offline, rápido e sem depender do pePI estar de pé. Fica como próximo
-  passo — vale mais que crescer superfície de ferramenta nova agora.
 - **Não fiz plano de migração pra um "novo portal" do INPI.** Existe uma URL
   `servicos.busca.inpi.gov.br` que parece ser uma interface nova do INPI, mas é uma SPA
   (JavaScript), não dá pra confirmar por fetch simples se é uma busca de marcas, se está em

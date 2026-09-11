@@ -1,0 +1,37 @@
+{
+  "guarda": "seção 'Petições' com mais de uma linha (histórico de protocolo)",
+  "numeroProcesso": "821480880",
+  "quantidadePeticoes": 5,
+  "peticoes": [
+    {
+      "protocolo": "800250374555",
+      "data": "22/09/2025",
+      "servico": "Prorrogação de registro de marca e expedição de certificado no prazo ordinário",
+      "cliente": "GOOGLE LLC"
+    },
+    {
+      "protocolo": "850170277397",
+      "data": "31/10/2017",
+      "servico": "Anotação de alteração de nome, sede ou endereço",
+      "cliente": "GOOGLE LLC"
+    },
+    {
+      "protocolo": "850160150324",
+      "data": "13/07/2016",
+      "servico": "Cópia reprográfica simples",
+      "cliente": "MONTAURY PIMENTA, MACHADO & VIEIRA DE MELLO ADVOGADOS"
+    },
+    {
+      "protocolo": "850160177821",
+      "data": "12/08/2016",
+      "servico": "Nomeação, destituição ou substituição de procurador [em processo de registro]",
+      "cliente": "Google Inc."
+    },
+    {
+      "protocolo": "800140245706",
+      "data": "20/10/2014",
+      "servico": "Prorrogação de registro de marca e expedição de certificado no prazo ordinário",
+      "cliente": "Google Inc."
+    }
+  ]
+}

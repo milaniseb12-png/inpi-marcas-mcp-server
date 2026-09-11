@@ -1,0 +1,8 @@
+{
+  "guarda": "busca por titular (nome) sem CNPJ devolve lista de candidatos com pos, não marcas direto",
+  "quantidadeCandidatos": 14,
+  "primeiroCandidato": {
+    "nome": "GOOGLE ADS INOVA SIMPLES",
+    "pos": 0
+  }
+}

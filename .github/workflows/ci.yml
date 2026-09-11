@@ -18,7 +18,10 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
+      - run: npm run test:parsers
       - run: npm audit --audit-level=high
       # test:e2e não roda aqui: precisa de INPI_USERNAME/INPI_PASSWORD reais contra o pePI
       # ao vivo, e não vale expor credencial pessoal de ninguém como secret de CI pública.
       # Rode `npm run test:e2e` localmente com sua própria credencial antes de abrir um PR.
+      # test:parsers acima roda em CI pública porque é offline, contra fixtures reais salvas
+      # em test/fixtures/ — ver test/fixtures/README.md.

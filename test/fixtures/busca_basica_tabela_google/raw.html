@@ -1,0 +1,3411 @@
+ 
+
+
+
+
+<html>
+    <head>
+        <title>INPI</title>
+        <meta content="text/html; charset=ISO-8859-1" http-equiv=Content-Type>
+        <link href="/pePI/jsp/css/inpi.css" rel=stylesheet type=text/css>
+   		<script type="text/javascript" src="../jsp/funcoes/meusPedidos.js"></script>
+    </head>
+    <body bgColor="#ffffff">
+    <form name="MarcaPesquisa" method="POST" action="../servlet/MarcasServletController">
+    <div id="mainContainer">
+
+<div id="principal">
+<br/>
+<div id="barra-brasil" style="background:#7F7F7F; height: 20px; padding:0 0 0 10px;display:block;">
+	<ul id="menu-barra-temp" style="list-style:none;">
+	<li style="display:inline; float:left;padding-right:10px; margin-right:10px; borderright:1px solid #EDEDED">
+		<a href="http://brasil.gov.br" style="font-family:sans,sans-serif; text- Portal Padrão Barra de Identidade Visual do Governo Federal na Internet - APLICAÇÃO right:1px solid #EDEDED">
+		<a href="http://brasil.gov.br" style="font-family:sans,sans-serif; text- decoration:none; color:white;">Portal do Governo Brasileiro</a>
+		</li>
+		<li>
+			<a style="font-family:sans,sans-serif; text-decoration:none; color:white;" 
+			href="http://epwg.governoeletronico.gov.br/barra/atualize.html">Atualize sua Barra de Governo
+			</a>
+		</li>
+	</ul>
+</div>
+<div id="logo">
+	<a id="portal-logo" href="http://www.inpi.gov.br" title="O portal do Brasil">
+		<span id="portal-title-1">Instituto Nacional da</span>
+		<span id="portal-title" class="corto">Propriedade Industrial</span>
+		<span id="portal-description">Ministério do Desenvolvimento, Indústria, Comércio e Serviços</span>
+	</a>
+</div>
+<script src="/pePI/jsp/funcoes/barra.js" type="text/javascript"></script>
+
+
+
+    <table width="100%" align="center" border="0" cellpadding="0" cellspacing="1">
+        <tr>
+            <td colspan="8" align="center"><font class="titulo">Consulta à Base de Dados do INPI</font></td>
+        </tr>
+    </table>
+    <table align=center border=0 cellPadding=3 cellSpacing=1 width=720px>
+        <tr>
+            <td colspan="8" align="left">
+                <font class="normal">
+                    <div align="right">
+	                    [ <a href="../jsp/Base_pesquisa.jsp" class="titulo">Início</a> |
+	                    <a href="../jsp/Ajuda.jsp" class="normal">Ajuda?</a> ]
+                    </div>
+                </font>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" align="left">
+                <font class="normal">
+                    » Consultar por: 
+                        <a class="titulo" href="../jsp/marcas/Pesquisa_num_processo.jsp">Pesquisa Básica</a> |
+                        <a class="titulo" href="../jsp/marcas/Pesquisa_classe_basica.jsp">Marca</a> |
+                        <a class = "titulo" href = "../jsp/marcas/Pesquisa_titular.jsp">Titular </a> |
+                        <a class = "titulo" href = "../jsp/marcas/Pesquisa_figura.jsp">Cód. Figura</a> ]
+                </font>
+            </td>
+        </tr>
+        <tr>
+		  	<td colspan="2">
+	   	   		<hr class="hr">
+	    	</td>
+		</tr>
+        <tr>
+            <td colspan="8" align="left">
+                <font class="normal">
+                    <b>RESULTADO DA PESQUISA</b> 
+                    (11/09/2026 às 12:37:26)
+                    <br>
+                    <b>Marca:</b>&nbsp;"GOOGLE"
+                            <br>Foram encontrados <b>48</b> processos que satisfazem  à pesquisa. Mostrando página <b>1</b> de <b>2</b>.<br>
+                </font>
+            </td>
+        </tr>
+    </table>
+
+
+    <table width="780" align="center" border="0" cellpadding="2" cellspacing="1">
+        
+            	<tr>
+            	
+	                <td align="center" width="5" bgcolor="#B5D6AD">
+	                	<font class="normal">
+       		               <input type="checkbox"  name="TodosMeusPedidos" value="todos" class="ComboForm" onclick='checkboxStatus(this)'>
+	                	</font>
+	                </td>
+                    
+                <td align="center" width="5%" bgcolor="#B5D6AD" height="10"><font class="normal"><b>Número</b></font></td>
+                <td align="center" width="5%" bgcolor="#B5D6AD" height="10"><font class="normal"><b>Prioridade</b></font></td>
+                <td align="center" width="5%" bgcolor="#B5D6AD" height="18"><font class="normal">&nbsp;</font></td>		
+                <td align="center" width="25%" bgcolor="#B5D6AD" height="10"><font class="normal"><b>Marca</b></font></td>
+                <td align="center" width="5%" bgcolor="#B5D6AD" height="18"><font class="normal">&nbsp;</font></td>				
+                <td align="center" width="5%" bgcolor="#B5D6AD" height="10"> <font class="normal"><b>Situação</b></font></td>
+                <td align="center" width="30%" bgcolor="#B5D6AD" height="10"><font class="normal"><b>Titular</b></font></td>
+                <td align="center" width="20%" bgcolor="#B5D6AD" height="10"><font class="normal"><b>Classe</b></font></td>
+                
+            </tr>
+            
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="" 
+    	               onChange="ConfirmMyList(this.form,'',0)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    -
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    -
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                       <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Alto Renome
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="821480880" 
+    	               onChange="ConfirmMyList(this.form,'821480880',1)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1164582' class="visitado">
+                            821480880
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    16/09/1998
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="821507052" 
+    	               onChange="ConfirmMyList(this.form,'821507052',2)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1161160' class="visitado">
+                            821507052
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    16/09/1998
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="827350961" 
+    	               onChange="ConfirmMyList(this.form,'827350961',3)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1803278' class="visitado">
+                            827350961
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    19/04/2005
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 16
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="827350970" 
+    	               onChange="ConfirmMyList(this.form,'827350970',4)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1803281' class="visitado">
+                            827350970
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    19/04/2005
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 25
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="827350988" 
+    	               onChange="ConfirmMyList(this.form,'827350988',5)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1803284' class="visitado">
+                            827350988
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    19/04/2005
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 35
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="828075115" 
+    	               onChange="ConfirmMyList(this.form,'828075115',6)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1876726' class="visitado">
+                            828075115
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    11/01/2006
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="828075123" 
+    	               onChange="ConfirmMyList(this.form,'828075123',7)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1876732' class="visitado">
+                            828075123
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    11/01/2006
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="828084211" 
+    	               onChange="ConfirmMyList(this.form,'828084211',8)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1877751' class="visitado">
+                            828084211
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    16/01/2006
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="828664900" 
+    	               onChange="ConfirmMyList(this.form,'828664900',9)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1935040' class="visitado">
+                            828664900
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    21/08/2006
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 38
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="828664943" 
+    	               onChange="ConfirmMyList(this.form,'828664943',10)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=1935050' class="visitado">
+                            828664943
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    21/08/2006
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(8) 36
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831104031" 
+    	               onChange="ConfirmMyList(this.form,'831104031',11)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2525863' class="visitado">
+                            831104031
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    06/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 03
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831104040" 
+    	               onChange="ConfirmMyList(this.form,'831104040',12)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2526475' class="visitado">
+                            831104040
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    06/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 20
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831103795" 
+    	               onChange="ConfirmMyList(this.form,'831103795',13)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2525781' class="visitado">
+                            831103795
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    20/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831103809" 
+    	               onChange="ConfirmMyList(this.form,'831103809',14)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2525782' class="visitado">
+                            831103809
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    20/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 36
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831103825" 
+    	               onChange="ConfirmMyList(this.form,'831103825',15)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2525792' class="visitado">
+                            831103825
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    20/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 35
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831103833" 
+    	               onChange="ConfirmMyList(this.form,'831103833',16)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2525797' class="visitado">
+                            831103833
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    20/01/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831267518" 
+    	               onChange="ConfirmMyList(this.form,'831267518',17)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2614982' class="visitado">
+                            831267518
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    28/06/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE+
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca extinto
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 41
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831267526" 
+    	               onChange="ConfirmMyList(this.form,'831267526',18)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2614987' class="visitado">
+                            831267526
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    28/06/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE+
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca extinto
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 38
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831267500" 
+    	               onChange="ConfirmMyList(this.form,'831267500',19)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2614978' class="visitado">
+                            831267500
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    28/06/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE+
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca extinto
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831267496" 
+    	               onChange="ConfirmMyList(this.form,'831267496',20)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2614975' class="visitado">
+                            831267496
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    28/06/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE+
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca extinto
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 45
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="831267488" 
+    	               onChange="ConfirmMyList(this.form,'831267488',21)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2614972' class="visitado">
+                            831267488
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    28/06/2011
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE +
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca extinto
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(9) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="840052804" 
+    	               onChange="ConfirmMyList(this.form,'840052804',22)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2619861' class="visitado">
+                            840052804
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    01/02/2012
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="840225385" 
+    	               onChange="ConfirmMyList(this.form,'840225385',23)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=2695830' class="visitado">
+                            840225385
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    14/03/2012
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/N.gif" width="18" height="18" border="0"  alt="Marca Nominativa">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 39
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603405" 
+    	               onChange="ConfirmMyList(this.form,'910603405',24)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3318135' class="visitado">
+                            910603405
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 25
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603480" 
+    	               onChange="ConfirmMyList(this.form,'910603480',25)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3318155' class="visitado">
+                            910603480
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 36
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603367" 
+    	               onChange="ConfirmMyList(this.form,'910603367',26)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3319062' class="visitado">
+                            910603367
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576262" 
+    	               onChange="ConfirmMyList(this.form,'910576262',27)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3313624' class="visitado">
+                            910576262
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 36
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576220" 
+    	               onChange="ConfirmMyList(this.form,'910576220',28)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3314286' class="visitado">
+                            910576220
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 25
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603464" 
+    	               onChange="ConfirmMyList(this.form,'910603464',29)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3319064' class="visitado">
+                            910603464
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 35
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576203" 
+    	               onChange="ConfirmMyList(this.form,'910576203',30)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3314612' class="visitado">
+                            910576203
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 09
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576327" 
+    	               onChange="ConfirmMyList(this.form,'910576327',31)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3314616' class="visitado">
+                            910576327
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 39
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576343" 
+    	               onChange="ConfirmMyList(this.form,'910576343',32)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3314618' class="visitado">
+                            910576343
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576238" 
+    	               onChange="ConfirmMyList(this.form,'910576238',33)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3315527' class="visitado">
+                            910576238
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 35
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910576289" 
+    	               onChange="ConfirmMyList(this.form,'910576289',34)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3315532' class="visitado">
+                            910576289
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 38
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603642" 
+    	               onChange="ConfirmMyList(this.form,'910603642',35)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3316225' class="visitado">
+                            910603642
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603510" 
+    	               onChange="ConfirmMyList(this.form,'910603510',36)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3317214' class="visitado">
+                            910603510
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 38
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="910603561" 
+    	               onChange="ConfirmMyList(this.form,'910603561',37)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3317216' class="visitado">
+                            910603561
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    24/08/2015
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            GOOGLE
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_ok.gif" width="17" height="13" border="0"  alt="Marca Registrada">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Registro de marca em vigor
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			GOOGLE LLC
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 42
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="#E0E0E0" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="911366920" 
+    	               onChange="ConfirmMyList(this.form,'911366920',38)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3399963' class="visitado">
+                            911366920
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    21/07/2016
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                         - 
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    
+	                        <img src="/pePI/jsp/imagens/registro_nao_ok.gif" width="17" height="13" border="0"  alt="Marca Arquivada">
+	                    
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Pedido considerado inexistente
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			Caio Fonseca Torres
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(10) 15
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+            <tr bgColor="white" class=normal>
+                
+    	            <td>
+    	               <input type="checkbox"   
+    	               name="MeusPedidos" 
+    	               value="912446692" 
+    	               onChange="ConfirmMyList(this.form,'912446692',39)">
+    	            </td>
+                    
+                <td align="center">
+                    <font class="normal">
+                    
+                         
+                        <a href='/pePI/servlet/MarcasServletController?Action=detail&CodPedido=3509075' class="visitado">
+                            912446692
+                        </a>
+                        
+                        
+                    </font>
+                </td>
+                <td align="center">
+                    <font class="normal">
+                    19/03/2017
+                    </font>
+                </td>
+                <td align="center">
+                <img src="/pePI/jsp/imagens/M.gif" width="18" height="18" border="0"  alt="Marca Mista">
+                </td>
+                <td align="left">
+                    <font class="normal">
+                        <b>
+                        
+                            Google
+                            
+                        </b>
+                    </font>
+                </td>
+                <td align="center">
+                <!--  Situação da Marca -->
+                
+                
+	                    <img src="/pePI/jsp/imagens/registro_em_exame.gif" width="17" height="13" border="0"  alt="Marca requerida">
+	                 
+	               <!-- Fim da situação da marca. -->     
+                </td>
+                <td class="left padding-5">
+                    <font class="normal">
+                    
+						                  
+                        	Para liberar para exame de mérito (pedido de registro sem oposição)
+                        
+                        
+                    </font>
+                </td>
+                <td class="left">
+                    
+
+                        
+                        		
+                        		<font class="normal titular-marcas">
+                        			Marco Antonio Marques de Souza
+                        		</font>
+                        		
+                        	
+                
+              	
+                </td>      
+
+                <td class="left">
+                    
+                        
+                                            
+                                            <font class="normal titulo-marcas">
+                                            	NCL(11) 35
+											</font>
+											
+											
+                    </font>
+                </td>
+
+            </tr>
+        
+        <tr>
+            <td colspan="8" align="left">
+                <font class="normal">
+                    &nbsp;<br>Páginas de Resultados:<br>
+                    <b>1</b> |<a href="/pePI/servlet/MarcasServletController?Action=nextPageMarca&page=2" class="normal">2</a>-<a href="/pePI/servlet/MarcasServletController?Action=nextPageMarca&page=2" class="normal">Próxima»</a>
+               		<input type= "hidden" name="page" value="1">
+    				<input type= "hidden" name="NumPedido" value="">
+                	<input type= "hidden" name="Action" value="MeusPedidos">
+                </font>
+            </td>
+        </tr>
+    </table>
+  	</form>
+	</body>
+
+	<br/>
+      
+	<div id="bottom_principal"></div>
+	<div id="footer">
+		<div id="texto_footer">
+			<p>Rua Mayrink Veiga, 9 - Centro - RJ - CEP: 20090-910</p>
+		</div>
+		<div id="logo_ouvidoria">
+			<a href="http://faleconosco.inpi.gov.br/" target="blank"><img src="/pePI/jsp/imagens/faleconosco.png" border="0" alt="Fale Conosco" onmouseout="this.src='/pePI/jsp/imagens/faleconosco.png';"
+				title="Fale Conosco" onmouseover="this.src='/pePI/jsp/imagens/faleconosco.png';" /> </a>
+		</div>
+	</div>
+</html>
