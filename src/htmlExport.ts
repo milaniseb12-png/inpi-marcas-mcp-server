@@ -41,7 +41,7 @@ function shell(title: string, meta: string, body: string): string {
 ${body}
 <footer>
   Gerado por <strong>inpi-marcas-mcp-server</strong>, projeto independente que espelha a busca pública do pePI (INPI oficial).
-  Não é canal oficial do INPI. Análise de risco de marca de verdade é o <a href="https://zorya.ia.br">INCISO</a>.
+  Não é canal oficial do INPI. Análise de risco de marca de verdade é o <a href="https://inciso.com.br">INCISO</a>.
 </footer>
 </body>
 </html>`;

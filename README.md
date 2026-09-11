@@ -65,7 +65,7 @@ sem incluir nenhuma credencial.
 Ele só espelha a busca pública do pePI: dado que qualquer pessoa já acessa de graça,
 formatado para um agente de IA ler. Não faz jurimetria, não cruza fonte, não monitora
 colidência ao longo do tempo, não analisa risco. Quem quiser isso de forma pronta,
-sem precisar orquestrar ferramenta nenhuma, é o que o **[INCISO](https://zorya.ia.br)**
+sem precisar orquestrar ferramenta nenhuma, é o que o **[INCISO](https://inciso.com.br)**
 faz — plataforma de inteligência de marca construída em cima do acervo completo de RPIs
 do INPI, não só da busca ao vivo.
 
