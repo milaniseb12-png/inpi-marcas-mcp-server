@@ -24,6 +24,111 @@ existe no site público; não é um canal alternativo, não pula fila nem burla 
 | `inpi_next_page` | Paginar um resultado grande |
 | `inpi_get_process_detail` | Ficha completa: classes, titulares, procurador, datas, prioridade unionista, petições |
 
+## Exemplo de uso
+
+Três exemplos com dado **real**, capturado ao vivo do pePI durante o desenvolvimento (nenhum
+campo aqui é inventado — vem de `test/fixtures/` ou de uma captura de evidência real).
+
+**1. Busca simples**
+
+```
+inpi_search_by_mark({ marca: "GOOGLE", busca_exata: true })
+```
+
+`content` (Markdown, trecho):
+
+```markdown
+## GOOGLE — processo 821480880
+- Prioridade: 16/09/1998
+- Situação: Registro de marca em vigor (registro_vigente)
+- Titular: GOOGLE LLC
+- Classe: NCL(8) 09
+- CodPedido (use em inpi_get_process_detail): 1164582
+```
+
+`structuredContent` (trecho):
+
+```json
+{
+  "totalEncontrado": 48,
+  "totalPaginas": 2,
+  "resultados": [
+    {
+      "numeroProcesso": "821480880",
+      "marca": "GOOGLE",
+      "situacao": "Registro de marca em vigor",
+      "situacaoOperacional": "registro_vigente",
+      "titular": "GOOGLE LLC",
+      "classe": "NCL(8) 09",
+      "codPedido": "1164582"
+    }
+  ]
+}
+```
+
+**2. Detalhe com prioridade unionista** — usando o `codPedido` do exemplo acima:
+
+```
+inpi_get_process_detail({ cod_pedido: "1164582" })
+```
+
+`structuredContent` (trecho — a proveniência e o aviso jurídico vêm junto em todo `content`,
+omitidos aqui por brevidade):
+
+```json
+{
+  "numeroProcesso": "821480880",
+  "apresentacao": "Nominativa",
+  "dataDeposito": "12/03/1999",
+  "dataConcessao": "18/10/2005",
+  "dataVigencia": "18/10/2035",
+  "prioridadeUnionista": {
+    "numero": "75/554,461",
+    "pais": "US",
+    "data": "16/09/1998"
+  }
+}
+```
+
+Isso é a **Convenção de Paris**: o depósito no Brasil herda a data de prioridade do depósito
+original nos EUA, 16/09/1998 — seis meses antes do depósito brasileiro.
+
+**3. Evidência bruta** — mesmo processo, agora pedindo o pacote de prova:
+
+```
+inpi_get_process_detail({ cod_pedido: "1164582", salvar_evidencia: true })
+```
+
+`manifest.json` gerado (trecho — a captura real teve 10 assets, aqui 3):
+
+```json
+{
+  "capturadoEm": "2026-09-11T15:20:56.741Z",
+  "rawHtml": { "path": "raw.html", "sha256": "7a99723ffa02766...", "bytes": 104003 },
+  "assets": [
+    {
+      "urlOriginal": "https://busca.inpi.gov.br/pePI/jsp/imagens/faleconosco.png",
+      "path": "assets/e0852aea4297da97...b779c69.png",
+      "contentType": "image/png",
+      "bytes": 5359,
+      "sha256": "e0852aea4297da97...b779c69",
+      "ok": true
+    },
+    {
+      "urlOriginal": "https://busca.inpi.gov.br/pePI/jsp/css/inpi.css",
+      "path": "assets/ccd945416a55143d...09095a63.css",
+      "contentType": "text/css",
+      "bytes": 7607,
+      "sha256": "ccd945416a55143d...09095a63",
+      "ok": true
+    }
+  ]
+}
+```
+
+Cada asset tem sha256 conferível contra o arquivo em disco — é isso que separa "relatório
+bonito" de evidência auditável. Ver § Evidência bruta abaixo.
+
 ## Instalação
 
 ```bash
@@ -165,10 +270,11 @@ npm run dev     # roda com tsx, recarrega ao salvar
 npm run build   # compila pra dist/
 ```
 
-Testar com o [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
+Testar com o [MCP Inspector](https://github.com/modelcontextprotocol/inspector) — guia curto em
+[MCP_INSPECTOR.md](./MCP_INSPECTOR.md) (login, timeout, primeiro teste):
 
 ```bash
-npx @modelcontextprotocol/inspector node dist/index.js
+INPI_USERNAME=seu_login_pepi INPI_PASSWORD=sua_senha npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 Teste de ponta a ponta de verdade — sobe o servidor compilado, conecta como um cliente MCP

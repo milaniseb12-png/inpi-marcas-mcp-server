@@ -1,6 +1,6 @@
 {
   "name": "inpi-marcas-mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for the official Brazilian INPI trademark search system (pePI) — search process numbers, marks, owners and figurative codes with your own INPI login.",
   "type": "module",
   "main": "dist/index.js",
