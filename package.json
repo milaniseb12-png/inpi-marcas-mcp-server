@@ -1,0 +1,43 @@
+{
+  "name": "inpi-marcas-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for the official Brazilian INPI trademark search system (pePI) — search process numbers, marks, owners and figurative codes with your own INPI login.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "inpi-marcas-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "inpi",
+    "pepi",
+    "marcas",
+    "trademark",
+    "brasil",
+    "propriedade-intelectual"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "axios-cookiejar-support": "^5.0.3",
+    "cheerio": "^1.0.0",
+    "tough-cookie": "^5.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
